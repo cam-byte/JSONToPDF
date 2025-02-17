@@ -39,7 +39,7 @@ class ModernPDFFormGenerator:
         self.field_width = 450
         self.field_height = 24
         self.current_page = 1
-        self.logo_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/logo.png'
+        self.logo_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/logo.png'
         self.address = '123 Main St, Anytown, USA 12345'
         self.phone = '(555) 555-5555'
         self.email = 'contact@business.com'
@@ -585,6 +585,6 @@ def generate_form_pdf(json_file_path, output_pdf_path):
     generator.generate_pdf(output_pdf_path)
 
 if __name__ == "__main__":
-    json_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/form.json'
-    output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/generated_form.pdf'
+    json_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/form.json'
+    output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf'
     generate_form_pdf(json_path, output_path)
