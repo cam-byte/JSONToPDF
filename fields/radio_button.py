@@ -18,11 +18,11 @@ class RadioButton:
         options_list = _get_options(options)
         radio_size = 7
         
-        c.setFont("Helvetica", 9)
+        c.setFont("Helvetica", 8)
         c.setFillColor(self.colors['primary'])
 
         num_options = len(options_list)
-        total_width = (num_options * radio_size) + ((num_options - 1) * 30) + (num_options * c.stringWidth("  ", "Helvetica", 9))  
+        total_width = (num_options * radio_size) + ((num_options - 1) * 30) + (num_options * c.stringWidth("  ", "Helvetica", 8))  
         x_start = self.margin_x
         x_offset = 0
 
@@ -49,7 +49,7 @@ class RadioButton:
                 fieldFlags=0
             )
 
-            label_width = c.stringWidth(label, "Helvetica", 9)
+            label_width = c.stringWidth(label, "Helvetica", 8)
             c.drawString(x_start + x_offset + 10, self.generator.current_y - 6, label)
             x_offset += radio_size + 15 + label_width  
 
