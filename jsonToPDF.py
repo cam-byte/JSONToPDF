@@ -95,25 +95,18 @@ class ModernPDFFormGenerator:
         self.group_configs = {
             '*name_details': {
                 'columns': 3,
-                'widths': [0.43, 0.43, 0.14],  # Proportional widths
-                'spacing': 10
+                'widths': [0.33, 0.33, 0.33],  # Equal widths for first, last, and middle
+                'spacing': 5
             },
-            '*address_details': {
+             'address_details': {
                 'columns': 4,
                 'widths': [0.50, 0.20, 0.10, 0.20],
-                'spacing': 10
+                'spacing': 5
             },
             'contact_information': {
                 'columns': 3,
                 'widths': [0.33, 0.33, 0.33],
-                'spacing': 10
-            },
-            'two_columns': {
-                'columns': 2,
-                'widths': [0.5, 0.5],
-                'spacing': 10,
-                'with_box': True,
-                'box_padding': 20
+                'spacing': 5
             }
         }
 
@@ -223,20 +216,30 @@ class ModernPDFFormGenerator:
         self._initialize_page(c)
 
         for field in self.data['form']['content']['form']['fields']:
-            label = field.get('label', '')
-            field_name = field.get('name', '')
             field_type = field.get('type', '').lower().strip()
 
             if field_type in ['pdf_download', 'submit']:
                 continue
 
-            # Calculate space needed
-            needed_height = self._calculate_field_height(field_type, label, field.get('option', {}))
-            
-            # Check for page break
-            self._check_page_break(c, needed_height)
+            if field_type == 'group_start':
+                self._handle_group_start(field)
+                continue
+                
+            if field_type == 'group_end':
+                self._handle_group_end(c)
+                continue
 
-            # Draw the field with modern styling
+            if self.current_group:
+                # Add field to current group
+                self.group_fields.append(field)
+                continue
+
+            # Handle non-grouped fields as before
+            label = field.get('label', '')
+            field_name = field.get('name', '')
+            
+            needed_height = self._calculate_field_height(field_type, label, field.get('option', {}))
+            self._check_page_break(c, needed_height)
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
 
         # Get total page count
@@ -248,22 +251,39 @@ class ModernPDFFormGenerator:
         c.setTitle(self.data['form'].get('name', 'Generated Form'))
         c.acroForm.needAppearances = True
         self.current_page = 1
+        self.current_group = None
+        self.group_fields = []
         
         # Initialize first page
         self._initialize_page(c)
 
         for field in self.data['form']['content']['form']['fields']:
-            label = field.get('label', '')
-            field_name = field.get('name', '')
             field_type = field.get('type', '').lower().strip()
 
             if field_type in ['pdf_download', 'submit']:
                 continue
 
+            if field_type == 'group_start':
+                self._handle_group_start(field)
+                continue
+                
+            if field_type == 'group_end':
+                self._handle_group_end(c)
+                continue
+
+            if self.current_group:
+                # Add field to current group
+                self.group_fields.append(field)
+                continue
+
+            # Handle non-grouped fields as before
+            label = field.get('label', '')
+            field_name = field.get('name', '')
+
             # Save current font state
             current_font = c._fontname
             current_size = c._fontsize
-            current_color = c._fillColorObj  # Fixed attribute name
+            current_color = c._fillColorObj
 
             # Draw page number
             c.setFont("Helvetica", 9)
@@ -288,6 +308,81 @@ class ModernPDFFormGenerator:
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
 
         c.save()
+        
+    def _handle_group_start(self, field):
+        """Handle the start of a field group"""
+        self.current_group = field.get('name')
+        self.group_fields = []
+
+    def _handle_group_end(self, c):
+        """Handle the end of a field group and draw grouped fields"""
+        if not self.current_group or not self.group_fields:
+            return
+
+        # Get group configuration
+        config = self.group_configs.get(self.current_group, {
+            'columns': 2,
+            'widths': [0.5, 0.5],
+            'spacing': 10
+        })
+
+        # Calculate available width for the group
+        available_width = self.field_width
+        spacing = config['spacing']
+
+        # Calculate individual field widths
+        field_widths = [w * available_width for w in config['widths']]
+
+        # Find the tallest field in the group
+        max_height = max(self._calculate_field_height(
+            field.get('type', ''),
+            field.get('label', ''),
+            field.get('option', {})
+        ) for field in self.group_fields)
+
+        # Check if we need a page break
+        if self._check_page_break(c, max_height):
+            return
+
+        # Save the starting y-position
+        original_y = self.current_y
+
+        # Draw fields in a row
+        current_x = self.margin_x
+        for i, field in enumerate(self.group_fields):
+            if i < len(field_widths):  # Only process fields that have defined widths
+                # Temporarily modify field width for this field
+                original_field_width = self.field_width
+                self.field_width = field_widths[i] - spacing
+
+                # Save current position
+                saved_y = self.current_y
+                saved_x = self.margin_x
+
+                # Modify margin for this field
+                self.margin_x = current_x
+
+                # Draw the field
+                self._draw_field(
+                    c,
+                    field.get('type', ''),
+                    field.get('name', ''),
+                    field.get('label', ''),
+                    field.get('option', {})
+                )
+
+                # Restore positions
+                self.current_y = saved_y
+                self.margin_x = saved_x
+                self.field_width = original_field_width
+
+                # Move to next field position
+                current_x += field_widths[i]
+
+        # Reset group tracking
+        self.current_y = original_y - max_height
+        self.current_group = None
+        self.group_fields = []
         
     def _get_label_style(self, field_type, label):
         """Determine the appropriate label style based on field type and content"""
