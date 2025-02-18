@@ -18,6 +18,7 @@ from fields.text_field import TextField
 from fields.text_area import TextArea
 from fields.check_box import CheckBox
 from fields.radio_button import RadioButton
+from fields.group_field import GroupField
 from utils import _calculate_field_height, _check_page_break
 
 class ModernPDFFormGenerator:
@@ -58,16 +59,55 @@ class ModernPDFFormGenerator:
         current_size = c._fontsize
         current_color = c._fillColorObj
 
-        if label:
-            style = self.label_manager.get_label_style(field_type, label)
-            draw_line = field_type == 'label' and ('<h1>' in label.lower())
-            self.label_manager.draw_label(c, label, style, draw_line)
+        if field_type == 'group_start':
+            group_field = GroupField(self, c)
+            group_field.start_group(field_name)
+            return
+        elif field_type == 'group_end':
+            group_field = GroupField(self, c)
+            group_field.end_group()
+            return
+
+        # Calculate field position based on group
+        field_x = self.margin_x
+        field_width = self.field_width
         
-        if field_type != 'label':
+        if self.current_group and self.group_fields:
+            config = self.group_configs.get(self.current_group, {})
+            column_index = len(self.group_fields) % config.get('columns', 1)
+            if column_index > 0:
+                field_x = self.margin_x + sum(self.column_widths[:column_index]) + (config.get('spacing', 10) * column_index)
+                self.current_y = self.group_fields[-1]['y']
+            
+            field_width = self.column_widths[column_index]
+
+        # Draw label first
+        if field_type == 'label':
+            style = self.label_manager.get_label_style(field_type, label)
+            draw_line = '<h1>' in label.lower()
+            self.label_manager.draw_label(c, label, style, draw_line)
+        elif field_type == 'radio' and label:
             field_label_style = self.label_styles['field_label']
             c.setFont(field_label_style.font_name, field_label_style.font_size)
             c.setFillColor(field_label_style.color)
-            
+            c.drawString(field_x, self.current_y + 10, label)
+        elif label:  # For non-label field types
+            field_label_style = self.label_styles['field_label']
+            c.setFont(field_label_style.font_name, field_label_style.font_size)
+            c.setFillColor(field_label_style.color)
+            c.drawString(field_x, self.current_y + 5, label)
+        
+        # Store field info for group positioning before drawing the field
+        if self.current_group is not None:
+            self.group_fields.append({
+            'name': field_name,
+            'x': field_x,
+            'y': self.current_y,
+            'width': field_width
+        })
+    
+        # Draw the field if it's not a label type
+        if field_type != 'label':
             if field_type in ['text', 'email', 'date', 'select']:
                 text_field = TextField(self, c)
                 text_field.draw(field_name, label)
@@ -80,7 +120,7 @@ class ModernPDFFormGenerator:
             elif field_type == 'checkbox':
                 check_box = CheckBox(self, c)
                 check_box.draw(field_name, label, options)
-                
+                    
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
 
