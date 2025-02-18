@@ -39,7 +39,7 @@ class ModernPDFFormGenerator:
         self.field_width = 450
         self.field_height = 24
         self.current_page = 1
-        self.logo_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/logo.png'
+        self.logo_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/logo.png'
         self.address = '123 Main St, Anytown, USA 12345'
         self.phone = '(555) 555-5555'
         self.email = 'contact@business.com'
@@ -73,7 +73,7 @@ class ModernPDFFormGenerator:
             ),
             'h4': LabelStyle(
                 font_name="Helvetica-Oblique",
-                font_size=10,
+                font_size=6,
                 color=self.colors['secondary'],
                 spacing_after=20
             ),
@@ -97,23 +97,6 @@ class ModernPDFFormGenerator:
                 'columns': 3,
                 'widths': [0.43, 0.43, 0.14],  # Proportional widths
                 'spacing': 10
-            },
-            '*address_details': {
-                'columns': 4,
-                'widths': [0.50, 0.20, 0.10, 0.20],
-                'spacing': 10
-            },
-            'contact_information': {
-                'columns': 3,
-                'widths': [0.33, 0.33, 0.33],
-                'spacing': 10
-            },
-            'two_columns': {
-                'columns': 2,
-                'widths': [0.5, 0.5],
-                'spacing': 10,
-                'with_box': True,
-                'box_padding': 20
             }
         }
 
@@ -460,15 +443,24 @@ class ModernPDFFormGenerator:
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
 
+        # Calculate horizontal spacing 
+        num_options = len(options_list)
+        # Increased spacing between radio buttons and labels from 15 to 30
+        total_width = (num_options * radio_size) + ((num_options - 1) * 30) + (num_options * c.stringWidth("  ", "Helvetica", 9))  
+        x_start = self.margin_x  # Align to the left margin
+        x_offset = 0
+
         for value, label in options_list:
-            if self._check_page_break(c, 15):  # Reduced from 20
+            if self._check_page_break(c, 20):
+                x_offset = 0  # Reset x_offset after page break
+                x_start = self.margin_x  # Reset x_start to the left margin
                 continue
 
             c.acroForm.radio(
                 name=group_name,
                 value=value,
                 selected=False,
-                x=self.margin_x,
+                x=x_start + x_offset,
                 y=self.current_y - radio_size,
                 size=radio_size,
                 buttonStyle='circle',
@@ -480,13 +472,15 @@ class ModernPDFFormGenerator:
                 forceBorder=True,
                 fieldFlags=0
             )
-            
-            c.drawString(self.margin_x + 15, self.current_y - 6, label)
-            self.current_y -= 15  # Reduced from 20 to decrease spacing between options
+
+            label_width = c.stringWidth(label, "Helvetica", 9)  # Calculate width of the label
+            c.drawString(x_start + x_offset + 10, self.current_y - 6, label)
+            # Add the label width to the offset to space out the radio buttons properly
+            x_offset += radio_size + 15 + label_width  
 
         # Add bottom margin after all radio buttons
-        self.current_y -= 20
-        
+        self.current_y -= 30  # Increased margin for better spacing
+
         # Restore original font state
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
@@ -579,12 +573,12 @@ class ModernPDFFormGenerator:
 
 def generate_form_pdf(json_file_path, output_pdf_path):
     with open(json_file_path, 'r') as file:
-        form_data = json.load(file)
+           form_data = json.load(file)
 
     generator = ModernPDFFormGenerator(form_data)
     generator.generate_pdf(output_pdf_path)
 
 if __name__ == "__main__":
-    json_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/form.json'
-    output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/form/generated_form.pdf'
+    json_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/form.json'
+    output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf'
     generate_form_pdf(json_path, output_path)
