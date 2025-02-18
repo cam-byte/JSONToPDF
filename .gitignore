@@ -1,1 +1,14 @@
-.DS_STORE
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+env/
+venv/
+
+# macOS
+.DS_Store
+
+# Generated files
+form/generated_form.pdf
+*.pdf
