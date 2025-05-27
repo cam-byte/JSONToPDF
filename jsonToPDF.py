@@ -68,20 +68,7 @@ class ModernPDFFormGenerator:
             group_field.end_group()
             return
 
-        # Calculate field position based on group
-        field_x = self.margin_x
-        field_width = self.field_width
-        
-        if self.current_group and self.group_fields:
-            config = self.group_configs.get(self.current_group, {})
-            column_index = len(self.group_fields) % config.get('columns', 1)
-            if column_index > 0:
-                field_x = self.margin_x + sum(self.column_widths[:column_index]) + (config.get('spacing', 10) * column_index)
-                self.current_y = self.group_fields[-1]['y']
-            
-            field_width = self.column_widths[column_index]
-
-        # Draw label first
+        # Draw label first (only if NOT in a group - grouped fields handle their own)
         if field_type == 'label':
             style = self.label_manager.get_label_style(field_type, label)
             draw_line = '<h1>' in label.lower()
@@ -90,23 +77,14 @@ class ModernPDFFormGenerator:
             field_label_style = self.label_styles['field_label']
             c.setFont(field_label_style.font_name, field_label_style.font_size)
             c.setFillColor(field_label_style.color)
-            c.drawString(field_x, self.current_y + 10, label)
-        elif label:  # For non-label field types
+            c.drawString(self.margin_x, self.current_y + 10, label)
+        elif label and not self.current_group:  # Only draw labels for non-grouped fields
             field_label_style = self.label_styles['field_label']
             c.setFont(field_label_style.font_name, field_label_style.font_size)
             c.setFillColor(field_label_style.color)
-            c.drawString(field_x, self.current_y + 5, label)
-        
-        # Store field info for group positioning before drawing the field
-        if self.current_group is not None:
-            self.group_fields.append({
-            'name': field_name,
-            'x': field_x,
-            'y': self.current_y,
-            'width': field_width
-        })
-    
-        # Draw the field if it's not a label type
+            c.drawString(self.margin_x, self.current_y + 5, label)
+
+        # Draw the field if it's not a label type (let each field type handle positioning)
         if field_type != 'label':
             if field_type in ['text', 'email', 'date', 'select']:
                 text_field = TextField(self, c)
@@ -123,7 +101,7 @@ class ModernPDFFormGenerator:
                     
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
-
+    
     def _process_fields(self, c, total_pages=None):
         for field in self.data['form']['content']['form']['fields']:
             label = field.get('label', '')

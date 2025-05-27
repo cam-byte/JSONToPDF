@@ -625,7 +625,7 @@
 						"name": "illness_or_problem",
 						"label": "If yes, what was the illness or problem?",
 						"email_label": "If yes, what was the illness or problem?",
-						"type": "textarea",
+						"type": "text",
 						"required": false
 					},
 
@@ -883,7 +883,7 @@
 						"name": "food_specify",
 						"label": "If yes, please specify",
 						"email_label": "If yes, please specify",
-						"type": "textarea"
+						"type": "text"
 					},
 					{
 						"type": "group_end"
@@ -1326,7 +1326,7 @@
 						"name": "mental_health_disorders_specify",
 						"label": "If yes, please specify",
 						"email_label": "If yes, please specify",
-						"type": "textarea"
+						"type": "text"
 					},
 					{
 						"name": "recurrent_infections",
@@ -1340,7 +1340,7 @@
 						"name": "recurrent_infections_specify",
 						"label": "If yes, type of infection",
 						"email_label": "If yes, type of infection",
-						"type": "textarea"
+						"type": "text"
 					},
 					{
 						"name": "kidney_problems",

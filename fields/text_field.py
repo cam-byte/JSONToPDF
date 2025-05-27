@@ -30,6 +30,17 @@ class TextField:
                 previous_field = self.generator.group_fields[group_index - 1]
                 self.generator.current_y = previous_field['y']
 
+            # Draw label for grouped fields (positioned correctly)
+            if label:
+                field_label_style = self.generator.label_styles['field_label']
+                self.canvas.setFont(field_label_style.font_name, field_label_style.font_size)
+                self.canvas.setFillColor(field_label_style.color)
+                self.canvas.drawString(field_x, self.generator.current_y + 5, label)
+
+        # Set minimum field width to prevent ReportLab issues
+        min_width = 60  # Minimum 60 pixels
+        field_width = max(field_width, min_width)
+        
         # Draw the field
         self.canvas.acroForm.textfield(
             name=field_name,
