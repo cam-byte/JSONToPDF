@@ -2,12 +2,12 @@
 from reportlab.lib import colors
 
 MARGINS = {
-    'x': 72,
-    'bottom': 72
+    'x': 36,
+    'bottom': 36
 }
 
 FIELD_DIMENSIONS = {
-    'width': 450,
+    'width': 550,
     'height': 24
 }
 
@@ -31,7 +31,17 @@ COLORS = {
 GROUP_CONFIGS = {
     '*name_details': {
         'columns': 3,
-        'widths': [0.43, 0.43, 0.14],
-        'spacing': 10
+        'widths': [0.4, 0.4, 0.2],  # 40%, 40%, 20%
+        'spacing': 15
+    },
+    '*address_details': {
+        'columns': 4,
+        'widths': [0.43, 0.21, 0.14, 0.22],  # Street 43%, City 21%, State 14%, Zip 22%
+        'spacing': 8
+    },
+    'contact_information': {
+        'columns': 3,
+        'widths': [0.33, 0.33, 0.34],  # Equal thirds
+        'spacing': 15
     }
 }
