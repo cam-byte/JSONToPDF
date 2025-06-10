@@ -1,52 +1,56 @@
-# label_styles.py
-from dataclasses import dataclass
+# label_styles.py - CLEAN READABLE SPACING
 from reportlab.lib import colors
-from constants import COLORS
+from utils import LabelStyle
 
-@dataclass
-class LabelStyle:
-    font_name: str
-    font_size: int
-    color: colors.Color
-    spacing_after: int
-    alignment: str = 'left'
-
+# Clean, readable spacing that prevents overlapping
 LABEL_STYLES = {
-    'field_label': LabelStyle(
-        font_name="Helvetica-Bold",
-        font_size=8,
-        color=COLORS['secondary'],
-        spacing_after=8
-    ),
     'h1': LabelStyle(
-        font_name="Helvetica-Bold",
-        font_size=18,
-        color=COLORS['accent'],
-        spacing_after=35,
-        alignment='center'
+        font_name='Helvetica-Bold',
+        font_size=14,
+        color=colors.black,
+        spacing_after=12,      # Reasonable spacing
+        alignment='left'
     ),
     'h3': LabelStyle(
-        font_name="Helvetica-Bold",
-        font_size=14,
-        color=COLORS['accent'],
-        spacing_after=25
+        font_name='Helvetica-Bold',
+        font_size=12,
+        color=colors.black,
+        spacing_after=8,       # Reasonable spacing
+        alignment='left'
     ),
     'h4': LabelStyle(
-        font_name="Helvetica-Oblique",
-        font_size=6,
-        color=COLORS['secondary'],
-        spacing_after=20
+        font_name='Helvetica-Bold',
+        font_size=10,
+        color=colors.black,
+        spacing_after=6,       # Reasonable spacing
+        alignment='left'
+    ),
+    'h5': LabelStyle(
+        font_name='Helvetica',
+        font_size=9,
+        color=colors.Color(0.4, 0.4, 0.4),
+        spacing_after=4,       # Reasonable spacing
+        alignment='left'
     ),
     'p': LabelStyle(
-        font_name="Helvetica",
+        font_name='Helvetica',
         font_size=10,
-        color=COLORS['secondary'],
-        spacing_after=30
+        color=colors.black,
+        spacing_after=6,       # Reasonable spacing
+        alignment='left'
     ),
     'regular': LabelStyle(
-        font_name="Helvetica",
+        font_name='Helvetica',
+        font_size=10,
+        color=colors.black,
+        spacing_after=4,       # Reasonable spacing
+        alignment='left'
+    ),
+    'field_label': LabelStyle(
+        font_name='Helvetica',
         font_size=9,
-        color=COLORS['secondary'],
-        spacing_after=12
+        color=colors.Color(0.3, 0.3, 0.3),
+        spacing_after=3,       # Adequate spacing for field labels
+        alignment='left'
     )
 }

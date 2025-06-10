@@ -1,4 +1,4 @@
-# fields/group_field.py - Simplified version
+# fields/group_field.py - COMPACT VERSION
 class GroupField:
     def __init__(self, generator, canvas):
         self.generator = generator
@@ -11,11 +11,14 @@ class GroupField:
         self.generator.current_group = group_name
         self.generator.group_fields = []
         
+        # Store the starting Y position
+        self.generator.group_start_y = self.generator.current_y
+        
         # Get group configuration
         config = self.generator.group_configs.get(group_name, {
-            'columns': 1,
-            'widths': [1.0],
-            'spacing': 10
+            'columns': 2,
+            'widths': [0.5, 0.5],
+            'spacing': 10  # Default reduced spacing
         })
         
         columns = config['columns']
@@ -24,16 +27,9 @@ class GroupField:
         
         # Ensure we have the right number of widths
         if len(widths) != columns:
-            # Fix it by extending or truncating
-            if len(widths) < columns:
-                # Add equal remaining width
-                remaining = 1.0 - sum(widths)
-                additional = remaining / (columns - len(widths))
-                widths.extend([additional] * (columns - len(widths)))
-            else:
-                widths = widths[:columns]
+            widths = [1.0 / columns] * columns
         
-        # Normalize widths to proportions (handle both decimal and integer formats)
+        # Normalize widths to proportions
         total = sum(widths)
         if total == 0:
             widths = [1.0 / columns] * columns
@@ -49,55 +45,30 @@ class GroupField:
         ]
         self.generator.group_spacing = spacing
         self.generator.group_columns = columns
-        
-        return self.generator.current_y
 
     def end_group(self):
         if self.generator.group_fields:
-            # Find the lowest Y position from all fields
-            min_y = min(f['y'] for f in self.generator.group_fields)
-            self.generator.current_y = min_y - (self.generator.field_height + 25)
+            # Group fields by row and find the lowest Y position
+            rows = {}
+            for i, field in enumerate(self.generator.group_fields):
+                row_index = i // self.generator.group_columns
+                if row_index not in rows:
+                    rows[row_index] = []
+                rows[row_index].append(field)
+            
+            # Find the lowest Y position across all rows
+            lowest_y = self.generator.group_start_y
+            for row_fields in rows.values():
+                row_min_y = min(f.get('y', self.generator.current_y) for f in row_fields)
+                lowest_y = min(lowest_y, row_min_y)
+            
+            # Set Y position with minimal spacing after group
+            self.generator.current_y = lowest_y - 5  # Reduced from 10
         
-        print(f"Ended group {self.generator.current_group}, new Y: {self.generator.current_y}")
-
         # Reset group variables
         self.generator.current_group = None
         self.generator.group_fields = []
         self.generator.column_widths = None
         self.generator.group_spacing = None
         self.generator.group_columns = None
-        
-        return self.generator.current_y
-
-    def get_field_position(self, field_index):
-        """Calculate position for field within group"""
-        if not self.generator.current_group:
-            return self.margin_x, self.field_width, self.generator.current_y
-        
-        column_index = field_index % self.generator.group_columns
-        row_index = field_index // self.generator.group_columns
-        
-        # Calculate X position
-        field_x = self.margin_x
-        if column_index > 0:
-            # Add widths of previous columns plus spacing
-            field_x += sum(self.generator.column_widths[:column_index])
-            field_x += self.generator.group_spacing * column_index
-        
-        field_width = self.generator.column_widths[column_index]
-        
-        # For Y position: all fields in the same row should have the same Y
-        if column_index == 0:
-            # First column - use current Y
-            field_y = self.generator.current_y
-        else:
-            # Not first column - find the Y of the first field in this row
-            first_in_row_index = row_index * self.generator.group_columns
-            if first_in_row_index < len(self.generator.group_fields):
-                field_y = self.generator.group_fields[first_in_row_index]['y']
-            else:
-                field_y = self.generator.current_y
-        
-        print(f"Field {field_index} -> Column {column_index}: x={field_x:.0f}, width={field_width:.0f}, y={field_y}")
-        
-        return field_x, field_width, field_y
+        self.generator.group_start_y = None
