@@ -3,6 +3,7 @@ from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 import json
+import os
 
 from constants import (
     MARGINS, 
@@ -62,6 +63,103 @@ class ModernPDFFormGenerator:
         self.page_manager = PageManager(self)
         self.label_manager = LabelManager(self)
 
+        # Get the first key and parse form data
+        self.form_key = self._get_first_form_key()
+        self.form_data = self._find_form_data()
+
+    def _get_first_form_key(self):
+        """Get the first key from the JSON data (the main form identifier)"""
+        if isinstance(self.data, dict) and self.data:
+            first_key = list(self.data.keys())[0]
+            print(f"Using form key: {first_key}")
+            return first_key
+        return None
+
+    def _find_form_data(self):
+        """Find the actual form data structure in the JSON"""
+        if not self.form_key:
+            print("No form key found, using entire JSON as form data")
+            return self.data
+            
+        # Navigate through the structure: first_key -> content -> nested_form_key -> fields
+        try:
+            main_section = self.data[self.form_key]
+            if 'content' in main_section:
+                content = main_section['content']
+                # Look for the nested form key (usually similar to main key but different)
+                for key, value in content.items():
+                    if isinstance(value, dict) and 'fields' in value:
+                        print(f"Found form data at: {self.form_key}.content.{key}")
+                        return value
+                        
+            # Fallback: search recursively
+            def search_for_fields(obj, path=""):
+                if isinstance(obj, dict):
+                    if 'fields' in obj:
+                        return obj, path
+                    for key, value in obj.items():
+                        result, result_path = search_for_fields(value, f"{path}.{key}" if path else key)
+                        if result:
+                            return result, result_path
+                elif isinstance(obj, list):
+                    for i, item in enumerate(obj):
+                        result, result_path = search_for_fields(item, f"{path}[{i}]" if path else f"[{i}]")
+                        if result:
+                            return result, result_path
+                return None, ""
+
+            form_data, path = search_for_fields(self.data)
+            if form_data:
+                print(f"Found form data at: {path}")
+                return form_data
+            else:
+                print("No 'fields' key found, using entire JSON as form data")
+                return self.data
+                
+        except KeyError as e:
+            print(f"Key error when parsing form data: {e}")
+            return self.data
+
+    def _get_form_title(self):
+        """Extract form title from various possible locations"""
+        # Try common title field names
+        title_fields = ['form_name', 'title', 'name', 'form_title']
+        
+        # First check the form_data itself
+        for field in title_fields:
+            if field in self.form_data:
+                return self.form_data[field]
+        
+        # Then check the root data
+        for field in title_fields:
+            if field in self.data:
+                return self.data[field]
+        
+        # Try to find it in nested structures
+        def find_title(obj):
+            if isinstance(obj, dict):
+                for field in title_fields:
+                    if field in obj and isinstance(obj[field], str):
+                        return obj[field]
+                for value in obj.values():
+                    result = find_title(value)
+                    if result:
+                        return result
+            return None
+        
+        title = find_title(self.data)
+        return title if title else "Generated Form"
+
+    def _get_fields(self):
+        """Extract fields from the form data"""
+        if 'fields' in self.form_data:
+            return self.form_data['fields']
+        elif isinstance(self.form_data, list):
+            return self.form_data
+        else:
+            print("Warning: No fields found in form data")
+            return []
+
     def _draw_field(self, c, field_type, field_name, label, options):
         current_font = c._fontname
         current_size = c._fontsize
@@ -113,7 +211,9 @@ class ModernPDFFormGenerator:
         c.setFillColor(current_color)
     
     def _process_fields(self, c, total_pages=None):
-        for field in self.data['dental_patient_intake_v2']['content']['dental_patient_intake_v2']['fields']:
+        fields = self._get_fields()
+        
+        for field in fields:
             label = field.get('label', '')
             field_name = field.get('name', '')
             field_type = field.get('type', '').lower().strip()
@@ -141,7 +241,8 @@ class ModernPDFFormGenerator:
     def generate_pdf(self, output_filename):
         # First pass to count pages
         c = canvas.Canvas(output_filename, pagesize=letter)
-        c.setTitle(self.data['dental_patient_intake_v2'].get('form_name', 'Generated Form'))
+        form_title = self._get_form_title()
+        c.setTitle(form_title)
         c.acroForm.needAppearances = True
         
         self.page_manager.initialize_page(c)
@@ -156,7 +257,7 @@ class ModernPDFFormGenerator:
         self.group_fields = []
         
         c = canvas.Canvas(output_filename, pagesize=letter)
-        c.setTitle(self.data['dental_patient_intake_v2'].get('form_name', 'Generated Form'))
+        c.setTitle(form_title)
         c.acroForm.needAppearances = True
         
         self.page_manager.initialize_page(c)
@@ -166,7 +267,11 @@ class ModernPDFFormGenerator:
         print(f"PDF generated with {total_pages} pages")
 
 def generate_form_pdf(json_file_path, output_pdf_path):
-    with open(json_file_path, 'r') as file:
+    # Check if JSON file exists
+    if not os.path.exists(json_file_path):
+        raise FileNotFoundError(f"JSON file not found: {json_file_path}")
+    
+    with open(json_file_path, 'r', encoding='utf-8') as file:
         form_data = json.load(file)
 
     generator = ModernPDFFormGenerator(form_data)
@@ -177,8 +282,18 @@ if __name__ == "__main__":
     output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf'
     
     try:
+        if os.path.exists(output_path):
+            # Delete the file
+            os.remove(output_path)
+            print(f"Deleted existing file: {output_path}")
         generate_form_pdf(json_path, output_path)
         print(f"PDF generated successfully: {output_path}")
+    except FileNotFoundError as e:
+        print(f"File error: {e}")
+    except json.JSONDecodeError as e:
+        print(f"JSON parsing error: {e}")
+    except KeyError as e:
+        print(f"Missing required data in JSON: {e}")
     except Exception as e:
         print(f"Error generating PDF: {e}")
         import traceback

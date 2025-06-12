@@ -1,5 +1,5 @@
-# fields/check_box.py - CLEAN IMPLEMENTATION
-from utils import _get_options, _check_page_break, _strip_html_tags
+# fields/check_box.py - WITH TEXT WRAPPING
+from utils import _get_options, _check_page_break, _strip_html_tags, draw_wrapped_text, calculate_wrapped_text_height
 
 class CheckBox:
     def __init__(self, generator, canvas):
@@ -22,7 +22,6 @@ class CheckBox:
         # Get checkbox options
         options_list = _get_options(options)
         
-        # If no options, create a single checkbox
         if not options_list:
             self._draw_single_checkbox(c, field_name, label, field_x, field_width, field_y, starting_y)
         else:
@@ -32,19 +31,21 @@ class CheckBox:
         c.setFillColor(current_color)
 
     def _draw_single_checkbox(self, c, field_name, label, field_x, field_width, field_y, starting_y):
-        """Draw a single checkbox with label"""
-        # Draw label first
+        # Draw label with text wrapping
         if label:
             field_label_style = self.generator.label_styles['field_label']
-            c.setFont(field_label_style.font_name, field_label_style.font_size)
-            c.setFillColor(field_label_style.color)
-            c.drawString(field_x, field_y, label)
-            field_y -= 15
+            max_label_width = field_width * 0.9
+            
+            final_label_y = draw_wrapped_text(
+                c, label, field_x, field_y, max_label_width,
+                field_label_style.font_name, field_label_style.font_size,
+                field_label_style.color
+            )
+            
+            field_y = final_label_y - 15
 
-        # Position checkbox
         field_y_position = field_y - 3
 
-        # Draw checkbox
         c.acroForm.checkbox(
             name=field_name,
             tooltip=label,
@@ -60,31 +61,33 @@ class CheckBox:
 
         final_field_y = field_y_position - 12
 
-        # Update positioning
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)
         else:
             self.generator.current_y = final_field_y - 8
 
     def _draw_multiple_checkboxes(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
-        """Draw multiple checkboxes for options"""
-        # Draw main label
+        # Draw main label with text wrapping
         if label:
             field_label_style = self.generator.label_styles['field_label']
-            c.setFont(field_label_style.font_name, field_label_style.font_size)
-            c.setFillColor(field_label_style.color)
-            c.drawString(field_x, field_y, label)
-            field_y -= 15
+            max_label_width = field_width * 0.9
+            
+            final_label_y = draw_wrapped_text(
+                c, label, field_x, field_y, max_label_width,
+                field_label_style.font_name, field_label_style.font_size,
+                field_label_style.color
+            )
+            
+            field_y = final_label_y - 15
 
         current_y = field_y
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
+        max_option_width = field_width * 0.9 - 20  # Leave space for checkbox
         
         for i, (value, option_label) in enumerate(options_list):
-            # Clean HTML from option label
             clean_option_label = _strip_html_tags(option_label)
             
-            # Draw checkbox
             checkbox_name = f"{field_name}_{value}"
             c.acroForm.checkbox(
                 name=checkbox_name,
@@ -99,13 +102,16 @@ class CheckBox:
                 checked=False
             )
             
-            # Option label
-            c.drawString(field_x + 18, current_y - 5, clean_option_label)
-            current_y -= 18  # Adequate spacing between options
+            # Draw wrapped option label
+            final_option_y = draw_wrapped_text(
+                c, clean_option_label, field_x + 18, current_y - 5, max_option_width,
+                "Helvetica", 9, self.colors['primary']
+            )
+            
+            current_y = final_option_y - 8  # Space between options
 
         final_field_y = current_y
 
-        # Update positioning
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)
         else:

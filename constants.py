@@ -10,7 +10,7 @@ MARGINS = {
 
 # Normal field dimensions
 FIELD_DIMENSIONS = {
-    'width': 450,
+    'width': 510,
     'height': 18      # Slightly smaller but readable
 }
 
@@ -58,33 +58,33 @@ GROUP_CONFIGS = {
     },
     '*name_details': {
         'columns': 3,
-        'widths': [0.4, 0.4, 0.2],
-        'spacing': 15
+        'widths': [0.4, 0.4, 0.2],  # First Name (40%), Last Name (40%), Middle (20%)
+        'spacing': 20  # Increased spacing to prevent overlap
     },
     'contact_information': {
-        'columns': 2,
-        'widths': [0.5, 0.5],
+        'columns': 4,  # Changed from 2 to 4 to handle the 4 fields you have
+        'widths': [0.25, 0.25, 0.25, 0.25],  # Equal width for home/cell/work phone + preferred contact
         'spacing': 15
     },
     '*address_details': {
         'columns': 4,
-        'widths': [0.5, 0.2, 0.15, 0.15],
-        'spacing': 10
+        'widths': [0.5, 0.2, 0.15, 0.15],  # Address (50%), City (20%), State (15%), Zip (15%)
+        'spacing': 12  # Slightly more spacing
     },
     'guardian_details': {
         'columns': 2,
         'widths': [0.5, 0.5],
-        'spacing': 15
+        'spacing': 20  # More spacing
     },
     'two_columns': {
         'columns': 2,
-        'widths': [0.5, 0.5],
-        'spacing': 20
+        'widths': [0.45, 0.45],  # Slightly less than 50% each to account for spacing
+        'spacing': 30  # More spacing to prevent overlap
     },
     'four_columns': {
         'columns': 4,
-        'widths': [0.25, 0.25, 0.25, 0.25],
-        'spacing': 10
+        'widths': [0.23, 0.23, 0.23, 0.23],  # Slightly less than 25% each
+        'spacing': 15
     },
     'substance_details': {
         'columns': 1,
@@ -93,8 +93,8 @@ GROUP_CONFIGS = {
     },
     'women_only': {
         'columns': 2,
-        'widths': [0.5, 0.5],
-        'spacing': 15
+        'widths': [0.48, 0.48],
+        'spacing': 20
     },
     'pharmacy_information': {
         'columns': 1,

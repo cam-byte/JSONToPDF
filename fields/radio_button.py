@@ -1,5 +1,5 @@
-# fields/radio_button.py - CLEAN AND SIMPLE IMPLEMENTATION
-from utils import _get_options, _check_page_break
+# fields/radio_button.py - FIXED TO HANDLE REPORTLAB RADIO GROUP REQUIREMENTS
+from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, debug_group_positioning
 
 class RadioButton:
     def __init__(self, generator, canvas):
@@ -15,32 +15,43 @@ class RadioButton:
         current_size = c._fontsize
         current_color = c._fillColorObj
 
+        # DEBUG: Print positioning info
+        debug_group_positioning(self.generator, field_name, label or "")
+
         # Calculate field positioning
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
         
-        # Draw label with adequate spacing
+        # Draw label with text wrapping using actual field width
         if label:
             field_label_style = self.generator.label_styles['field_label']
-            c.setFont(field_label_style.font_name, field_label_style.font_size)
-            c.setFillColor(field_label_style.color)
-            c.drawString(field_x, field_y, label)
-            field_y -= 15  # Adequate space between label and options
+            max_label_width = field_width * 0.88  # Use actual field width
+            
+            final_label_y = draw_wrapped_text(
+                c, label, field_x, field_y, max_label_width,
+                field_label_style.font_name, field_label_style.font_size,
+                field_label_style.color
+            )
+            
+            field_y = final_label_y - 15
 
         # Get options
         options_list = _get_options(options)
         if not options_list:
             options_list = [('yes', 'Yes'), ('no', 'No')]  # Default Yes/No
 
-        # Draw radio buttons horizontally for simple cases
-        if len(options_list) <= 3:
-            self._draw_horizontal_radio_buttons(c, field_name, options_list, field_x, field_y)
-            final_y = field_y - 20
-        else:
-            # Draw vertically for many options
-            final_y = self._draw_vertical_radio_buttons(c, field_name, options_list, field_x, field_y)
+        # CRITICAL FIX: Ensure we have at least 2 options for ReportLab
+        if len(options_list) < 2:
+            # If only one option, add a "Not Selected" option
+            options_list.append(('not_selected', 'Not Selected'))
 
-        # Update positioning
+        # Draw radio buttons
+        if len(options_list) <= 3 and self._can_fit_horizontally(c, options_list, field_width):
+            self._draw_horizontal_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
+            final_y = field_y - 25
+        else:
+            final_y = self._draw_vertical_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
+
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_y, starting_y)
         else:
@@ -49,60 +60,118 @@ class RadioButton:
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
 
-    def _draw_horizontal_radio_buttons(self, c, field_name, options_list, field_x, field_y):
+    def _can_fit_horizontally(self, c, options_list, field_width):
+        """Check if radio buttons can fit horizontally in the available width"""
+        c.setFont("Helvetica", 9)
+        total_width = 0
+        for value, option_label in options_list:
+            option_width = 15 + c.stringWidth(option_label, "Helvetica", 9) + 20
+            total_width += option_width
+        
+        return total_width <= (field_width * 0.9)
+
+    def _draw_horizontal_radio_buttons(self, c, field_name, options_list, field_x, field_y, field_width):
         """Draw radio buttons horizontally"""
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
         
         x_offset = 0
+        max_width = field_width * 0.9  # Use 90% of available width
+        
         for value, option_label in options_list:
-            # Draw radio button
-            c.acroForm.radio(
-                name=field_name,
-                tooltip=f"{field_name} - {option_label}",
-                value=value,
-                selected=0,
-                x=field_x + x_offset,
-                y=field_y - 8,
-                size=10,
-                borderColor=self.colors['border'],
-                fillColor=self.colors['background'],
-                textColor=self.colors['primary'],
-                borderWidth=0.5
-            )
-            
-            # Draw option label
-            c.drawString(field_x + x_offset + 15, field_y - 5, option_label)
-            
-            # Move to next position
+            # Check if we have space for this option
             option_width = 15 + c.stringWidth(option_label, "Helvetica", 9) + 20
-            x_offset += option_width
+            if x_offset + option_width > max_width and x_offset > 0:
+                break  # Stop if we'd exceed available width
+            
+            try:
+                c.acroForm.radio(
+                    name=field_name,
+                    tooltip=f"{field_name} - {option_label}",
+                    value=value,
+                    selected=0,
+                    x=field_x + x_offset,
+                    y=field_y - 8,
+                    size=10,
+                    borderColor=self.colors['border'],
+                    fillColor=self.colors['background'],
+                    textColor=self.colors['primary'],
+                    borderWidth=0.5
+                )
+                
+                # Draw option label
+                c.drawString(field_x + x_offset + 15, field_y - 5, option_label)
+                x_offset += option_width
+                
+            except Exception as e:
+                print(f"Error creating radio button {field_name}:{value} - {e}")
+                # Fallback: create as text field if radio fails
+                c.acroForm.textfield(
+                    name=f"{field_name}_{value}",
+                    tooltip=f"{field_name} - {option_label}",
+                    x=field_x + x_offset,
+                    y=field_y - 18,
+                    width=option_width - 20,
+                    height=15,
+                    fontSize=9,
+                    borderWidth=0.5,
+                    borderColor=self.colors['border'],
+                    fillColor=self.colors['background'],
+                    textColor=self.colors['primary'],
+                    fieldFlags=0
+                )
+                x_offset += option_width
 
-    def _draw_vertical_radio_buttons(self, c, field_name, options_list, field_x, field_y):
+    def _draw_vertical_radio_buttons(self, c, field_name, options_list, field_x, field_y, field_width):
         """Draw radio buttons vertically"""
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
         
         current_y = field_y
+        max_label_width = field_width * 0.9 - 20  # Leave space for radio button
+        
         for value, option_label in options_list:
-            # Draw radio button
-            c.acroForm.radio(
-                name=field_name,
-                tooltip=f"{field_name} - {option_label}",
-                value=value,
-                selected=0,
-                x=field_x,
-                y=current_y - 8,
-                size=10,
-                borderColor=self.colors['border'],
-                fillColor=self.colors['background'],
-                textColor=self.colors['primary'],
-                borderWidth=0.5
-            )
-            
-            # Draw option label
-            c.drawString(field_x + 15, current_y - 5, option_label)
-            current_y -= 18
+            try:
+                c.acroForm.radio(
+                    name=field_name,
+                    tooltip=f"{field_name} - {option_label}",
+                    value=value,
+                    selected=0,
+                    x=field_x,
+                    y=current_y - 8,
+                    size=10,
+                    borderColor=self.colors['border'],
+                    fillColor=self.colors['background'],
+                    textColor=self.colors['primary'],
+                    borderWidth=0.5
+                )
+                
+                # Draw wrapped option label
+                final_option_y = draw_wrapped_text(
+                    c, option_label, field_x + 15, current_y - 5, max_label_width,
+                    "Helvetica", 9, self.colors['primary']
+                )
+                
+                current_y = final_option_y - 8  # Space between options
+                
+            except Exception as e:
+                print(f"Error creating radio button {field_name}:{value} - {e}")
+                # Fallback: create as text field if radio fails
+                c.acroForm.textfield(
+                    name=f"{field_name}_{value}",
+                    tooltip=f"{field_name} - {option_label}",
+                    x=field_x,
+                    y=current_y - 18,
+                    width=field_width * 0.8,
+                    height=15,
+                    fontSize=9,
+                    borderWidth=0.5,
+                    borderColor=self.colors['border'],
+                    fillColor=self.colors['background'],
+                    textColor=self.colors['primary'],
+                    fieldFlags=0
+                )
+                current_y -= 25
         
         return current_y
 

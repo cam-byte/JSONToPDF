@@ -1,5 +1,5 @@
-# fields/select_field.py - FIXED VERSION TO AVOID REPORTLAB BUG
-from utils import _get_options, _check_page_break
+# fields/select_field.py - WITH TEXT WRAPPING
+from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height
 
 class SelectField:
     def __init__(self, generator, canvas):
@@ -20,34 +20,33 @@ class SelectField:
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
         
-        # Draw label with consistent spacing
-        label_height = 0
+        # Draw label with text wrapping
         if label:
             field_label_style = self.generator.label_styles['field_label']
-            c.setFont(field_label_style.font_name, field_label_style.font_size)
-            c.setFillColor(field_label_style.color)
-            c.drawString(field_x, field_y + 3, label)
-            label_height = field_label_style.font_size + 3
-            field_y -= 15
+            max_label_width = field_width * 0.9
+            
+            final_label_y = draw_wrapped_text(
+                c, label, field_x, field_y + 3, max_label_width,
+                field_label_style.font_name, field_label_style.font_size,
+                field_label_style.color
+            )
+            
+            field_y = final_label_y - 15
 
         # Set minimum field width to prevent ReportLab issues
         min_width = 100
         field_width = max(field_width, min_width)
-
-        # Position field below label
         field_y_position = field_y - 5
 
-        # WORKAROUND: Use textfield instead of choice to avoid ReportLab bug
-        # We'll add the options as a comment or tooltip
+        # Get options and create tooltip
         options_list = _get_options(options)
         if options_list:
-            # Create a tooltip with all options
             option_strings = [f"{value}: {option_label}" for value, option_label in options_list]
             tooltip_text = f"{label} - Options: {', '.join([ol for v, ol in options_list])}"
         else:
             tooltip_text = label
 
-        # Draw as a regular text field with options in tooltip
+        # Draw as text field with options in tooltip
         c.acroForm.textfield(
             name=field_name,
             tooltip=tooltip_text,
@@ -63,16 +62,18 @@ class SelectField:
             fieldFlags=0
         )
 
-        # Optionally, draw the options next to the field for reference
-        if options_list and len(options_list) <= 3:  # Only for short option lists
+        # Draw options reference for short lists
+        if options_list and len(options_list) <= 3:
             c.setFont("Helvetica", 8)
             c.setFillColor(self.colors['secondary'])
             options_text = " / ".join([ol for v, ol in options_list])
-            c.drawString(field_x + field_width + 10, field_y_position - 8, f"({options_text})")
+            # Make sure options text doesn't extend beyond available space
+            max_options_width = (self.generator.field_width - field_width - 20)
+            if max_options_width > 50:  # Only show if there's reasonable space
+                c.drawString(field_x + field_width + 10, field_y_position - 8, f"({options_text})")
 
         final_field_y = field_y_position - self.field_height
 
-        # Update positioning for group or regular flow
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)
         else:
@@ -82,7 +83,6 @@ class SelectField:
         c.setFillColor(current_color)
 
     def _get_field_position(self):
-        """Calculate position for field within group or regular flow"""
         field_x = self.margin_x
         field_width = self.field_width
         field_y = self.generator.current_y
@@ -108,7 +108,6 @@ class SelectField:
         return field_x, field_width, field_y
 
     def _handle_group_positioning(self, field_x, field_width, final_y, start_y):
-        """Handle positioning when field is in a group"""
         self.generator.group_fields.append({
             'name': 'select_field',
             'x': field_x,

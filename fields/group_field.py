@@ -1,4 +1,4 @@
-# fields/group_field.py - COMPACT VERSION
+# fields/group_field.py - IMPROVED VERSION WITH BETTER ROW ALIGNMENT
 class GroupField:
     def __init__(self, generator, canvas):
         self.generator = generator
@@ -18,7 +18,7 @@ class GroupField:
         config = self.generator.group_configs.get(group_name, {
             'columns': 2,
             'widths': [0.5, 0.5],
-            'spacing': 10  # Default reduced spacing
+            'spacing': 15  # Increased default spacing to prevent overlap
         })
         
         columns = config['columns']
@@ -36,7 +36,7 @@ class GroupField:
         else:
             widths = [w / total for w in widths]
         
-        # Calculate actual pixel widths
+        # Calculate actual pixel widths with proper spacing
         total_spacing = spacing * (columns - 1) if columns > 1 else 0
         available_width = self.field_width - total_spacing
         
@@ -48,22 +48,8 @@ class GroupField:
 
     def end_group(self):
         if self.generator.group_fields:
-            # Group fields by row and find the lowest Y position
-            rows = {}
-            for i, field in enumerate(self.generator.group_fields):
-                row_index = i // self.generator.group_columns
-                if row_index not in rows:
-                    rows[row_index] = []
-                rows[row_index].append(field)
-            
-            # Find the lowest Y position across all rows
-            lowest_y = self.generator.group_start_y
-            for row_fields in rows.values():
-                row_min_y = min(f.get('y', self.generator.current_y) for f in row_fields)
-                lowest_y = min(lowest_y, row_min_y)
-            
-            # Set Y position with minimal spacing after group
-            self.generator.current_y = lowest_y - 5  # Reduced from 10
+            # Enhanced row alignment logic for text wrapping
+            self._align_group_rows()
         
         # Reset group variables
         self.generator.current_group = None
@@ -72,3 +58,45 @@ class GroupField:
         self.generator.group_spacing = None
         self.generator.group_columns = None
         self.generator.group_start_y = None
+
+    def _align_group_rows(self):
+        """Align fields in rows properly, accounting for text wrapping"""
+        if not self.generator.group_fields:
+            return
+        
+        columns = self.generator.group_columns
+        rows = {}
+        
+        # Group fields by row
+        for i, field in enumerate(self.generator.group_fields):
+            row_index = i // columns
+            if row_index not in rows:
+                rows[row_index] = []
+            rows[row_index].append(field)
+        
+        # Process each row to find the lowest Y position
+        final_y = self.generator.group_start_y
+        
+        for row_index, row_fields in rows.items():
+            if row_fields:
+                # Find the lowest Y position in this row
+                row_min_y = min(f.get('y', self.generator.group_start_y) for f in row_fields)
+                final_y = min(final_y, row_min_y)
+        
+        # Set the final Y position with adequate spacing
+        self.generator.current_y = final_y - 10
+
+    def get_column_info(self, column_index):
+        """Get positioning info for a specific column"""
+        if (self.generator.current_group is None or 
+            not hasattr(self.generator, 'column_widths') or
+            column_index >= len(self.generator.column_widths)):
+            return self.margin_x, self.field_width
+        
+        field_x = self.margin_x
+        if column_index > 0:
+            field_x += sum(self.generator.column_widths[:column_index])
+            field_x += self.generator.group_spacing * column_index
+        
+        field_width = self.generator.column_widths[column_index]
+        return field_x, field_width

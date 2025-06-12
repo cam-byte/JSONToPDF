@@ -28,8 +28,7 @@ class LabelManager:
         else:
             return self.label_styles['field_label']
 
-    def draw_label(self, canvas, label, style, draw_line=False):
-        """Draw a label with compact spacing"""
+    def draw_label(self, canvas, label, style, draw_line=False, spacing_before=None):
         current_font = canvas._fontname
         current_size = canvas._fontsize
         current_color = canvas._fillColorObj
@@ -41,20 +40,31 @@ class LabelManager:
         if not clean_text.strip():
             return
         
+        # Apply spacing_before if provided, otherwise use style's spacing_before
+        if spacing_before is not None:
+            self.generator.current_y -= spacing_before
+        elif hasattr(style, 'spacing_before'):
+            self.generator.current_y -= style.spacing_before
+        
         # Set font and color
         canvas.setFont(style.font_name, style.font_size)
         canvas.setFillColor(style.color)
         
         # More compact text wrapping
-        wrapped_lines = _wrap_text(clean_text, self.field_width - 20, style.font_size)
+        wrapped_lines = _wrap_text(clean_text, self.field_width - 0, style.font_size)
         
         # Tighter line height
         line_height = style.font_size + 1  # Reduced from +2
         
+        # Handle paragraph margins if applicable
+        is_paragraph = "<p>" in clean_text and "</p>" in clean_text
+        if is_paragraph and hasattr(style, 'paragraph_margin_top'):
+            self.generator.current_y -= style.paragraph_margin_top
+
         # Draw each line
         current_line_y = self.generator.current_y
         lines_drawn = 0
-        
+
         for line in wrapped_lines:
             if line.strip():
                 canvas.drawString(self.margin_x, current_line_y, line)
@@ -68,10 +78,13 @@ class LabelManager:
         else:
             # Even for empty content, minimal movement
             self.generator.current_y -= style.spacing_after
+            
+        if is_paragraph and hasattr(style, 'paragraph_margin_bottom'):
+            self.generator.current_y -= style.paragraph_margin_bottom
         
         # Draw underline for h1 headers if requested
         if draw_line and lines_drawn > 0:
-            line_y = current_line_y + line_height + 2
+            line_y = current_line_y + line_height + -5
             canvas.setStrokeColor(self.colors['accent'])
             canvas.setLineWidth(1)  # Thinner line
             canvas.line(self.margin_x, line_y, self.margin_x + self.field_width, line_y)
