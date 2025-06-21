@@ -266,11 +266,14 @@ class ModernPDFFormGenerator:
                 self.label_styles
             )
 
-            # Check for page break with reasonable logic
             if _check_page_break(self, c, needed_height):
                 self.page_manager.initialize_page(c)
+                if self.current_group:
+                    self.group_fields = []
+                    self.group_start_y = self.current_y
                 if total_pages:
                     self.page_manager.draw_page_number(c, self.current_page, total_pages)
+
 
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
