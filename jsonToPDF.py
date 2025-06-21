@@ -197,6 +197,7 @@ class ModernPDFFormGenerator:
                     radio_button.draw(field_name, label, options)
                 elif field_type == 'checkbox':
                     check_box = CheckBox(self, c)
+                    print(f"DEBUG: Drawing checkbox for {field_name} with options: {options}")
                     check_box.draw(field_name, label, options)
                 else:
                     # Fallback for unknown field types
