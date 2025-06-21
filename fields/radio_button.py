@@ -43,11 +43,8 @@ class RadioButton:
             options_list.append(('not_selected', 'Not Selected'))
 
         # Draw radio buttons
-        if len(options_list) <= 3 and self._can_fit_horizontally(c, options_list, field_width):
-            self._draw_horizontal_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
-            final_y = field_y - 25
-        else:
-            final_y = self._draw_vertical_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
+        self._draw_horizontal_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
+        final_y = field_y - 25
 
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_y, starting_y)
