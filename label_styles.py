@@ -33,7 +33,7 @@ LABEL_STYLES = {
         font_name='Helvetica-Bold',
         font_size=10,
         color=colors.black,
-        spacing_before=8,      # Space before h4 headers
+        spacing_before=6,      # Space before h4 headers
         spacing_after=6,       # Reasonable spacing
         alignment='left'
     ),
@@ -68,5 +68,13 @@ LABEL_STYLES = {
         spacing_before=4,      # Space before field labels
         spacing_after=3,       # Adequate spacing for field labels
         alignment='left'
-    )
+    ),
+    'ul': LabelStyle(
+        font_name='Helvetica',
+        font_size=10,
+        spacing_before=8,
+        spacing_after=4,
+        alignment='left',
+        color=colors.black
+    ),
 }
