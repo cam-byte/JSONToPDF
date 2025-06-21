@@ -31,7 +31,7 @@ class SelectField:
                 field_label_style.color
             )
             
-            field_y = final_label_y - 15
+            field_y = final_label_y + 12
 
         # Set minimum field width to prevent ReportLab issues
         min_width = 100

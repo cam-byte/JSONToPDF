@@ -31,7 +31,7 @@ class TextArea:
                 field_label_style.color
             )
             
-            field_y = final_label_y - 3
+            field_y = final_label_y + 10
 
         # Position field
         field_y_position = field_y - 3

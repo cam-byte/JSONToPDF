@@ -49,8 +49,8 @@ LABEL_STYLES = {
         font_name='Helvetica',
         font_size=10,
         color=colors.black,
-        spacing_before=21,      # Space before paragraphs
-        spacing_after=21,      # Reasonable spacing
+        spacing_before=10,      # Space before paragraphs
+        spacing_after=10,      # Reasonable spacing
         alignment='left'
     ),
     'regular': LabelStyle(

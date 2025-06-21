@@ -4,6 +4,7 @@ import re
 import os
 from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
 
 def _strip_html_tags(text):
     """Remove HTML tags from text"""
@@ -122,7 +123,7 @@ def wrap_text(canvas, text, max_width, font_name="Helvetica", font_size=10):
         lines.append(current_line)
     
     # Calculate total height (font_size + small spacing between lines)
-    line_height = font_size + 2
+    line_height = font_size + 4
     total_height = len(lines) * line_height if lines else 0
     
     return lines, total_height
@@ -172,19 +173,6 @@ def calculate_wrapped_text_height(canvas, text, max_width, font_name="Helvetica"
     lines, total_height = wrap_text(canvas, text, max_width, font_name, font_size)
     return total_height
 
-def debug_group_positioning(generator, field_name, label):
-    """Debug function to print group positioning info"""
-    if generator.current_group:
-        group_index = len(generator.group_fields)
-        column_index = group_index % generator.group_columns
-        print(f"DEBUG: Field '{field_name}' (label: '{label[:30]}...' if label else 'No label')")
-        print(f"  Group: {generator.current_group}")
-        print(f"  Group index: {group_index}, Column: {column_index}")
-        print(f"  Column widths: {generator.column_widths}")
-        print(f"  Available width for column {column_index}: {generator.column_widths[column_index] if generator.column_widths else 'None'}")
-        print(f"  Group spacing: {generator.group_spacing}")
-        print("---")
-
 def get_effective_field_width(generator):
     """Get the effective width for text wrapping based on current context"""
     if generator.current_group is not None and generator.column_widths:
@@ -198,20 +186,20 @@ def get_effective_field_width(generator):
         return generator.field_width
 
 # Legacy function names for compatibility
-def _wrap_text(text, max_width, font_size=10):
-    """Legacy wrapper for wrap_text - simplified version for label manager"""
+def _wrap_text(text, max_width, font_size=10, font_name="Helvetica"):
+    """Wrap text based on actual string width in points using ReportLab."""
     if not text:
         return []
     
     words = text.split()
     lines = []
     current_line = ""
-    # Rough character estimate - not precise but works for basic wrapping
-    chars_per_line = max(1, int(max_width / (font_size * 0.6)))
     
     for word in words:
         test_line = current_line + (" " if current_line else "") + word
-        if len(test_line) <= chars_per_line:
+        # Measure the width of the test_line
+        line_width = pdfmetrics.stringWidth(test_line, font_name, font_size)
+        if line_width <= max_width:
             current_line = test_line
         else:
             if current_line:

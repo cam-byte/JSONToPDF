@@ -10,7 +10,8 @@ from constants import (
     FIELD_DIMENSIONS, 
     BUSINESS_INFO, 
     COLORS,
-    GROUP_CONFIGS
+    GROUP_CONFIGS,
+    FULL_WIDTH_FIELDS 
 )
 from label_styles import LABEL_STYLES
 from page_manager import PageManager
@@ -209,17 +210,53 @@ class ModernPDFFormGenerator:
                     
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
-    
+
     def _process_fields(self, c, total_pages=None):
         fields = self._get_fields()
-        
-        for field in fields:
+        num_fields = len(fields)
+        i = 0
+        while i < num_fields:
+            field = fields[i]
             label = field.get('label', '')
             field_name = field.get('name', '')
             field_type = field.get('type', '').lower().strip()
 
+            prev_field_type = fields[i-1].get('type', '').lower().strip() if i > 0 else None
+            next_field_type = fields[i+1].get('type', '').lower().strip() if i+1 < num_fields else None
+
             # Skip submission fields
             if field_type in ['pdf_download', 'submit']:
+                i += 1
+                continue
+
+            # --- DYNAMIC LOGIC: Force new row for specific fields or radio between text fields ---
+            # Check for Women Only label by content
+            is_women_only_label = (field_type == 'label' and 
+                                'women only' in label.lower() and 
+                                'are you' in label.lower())
+            
+            if (field_name in FULL_WIDTH_FIELDS or 
+                is_women_only_label or
+                (field_type == 'radio' and 
+                (prev_field_type == 'text' or next_field_type == 'text') and 
+                self.current_group is None)):
+                
+                # Temporarily end current group if any
+                temp_group = self.current_group
+                if self.current_group:
+                    group_field = GroupField(self, c)
+                    group_field.end_group()
+                    self.current_group = None
+                
+                # Draw the field as full-width
+                self._draw_field(c, field_type, field_name, label, field.get('option', {}))
+                i += 1
+                
+                # Restore the group if we temporarily ended it
+                if temp_group:
+                    group_field = GroupField(self, c)
+                    group_field.start_group(temp_group)
+                
                 continue
 
             # Calculate needed height with reasonable estimates
@@ -228,7 +265,7 @@ class ModernPDFFormGenerator:
                 self.field_width, self.field_height, 
                 self.label_styles
             )
-            
+
             # Check for page break with reasonable logic
             if _check_page_break(self, c, needed_height):
                 self.page_manager.initialize_page(c)
@@ -237,6 +274,7 @@ class ModernPDFFormGenerator:
 
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
+            i += 1
 
     def generate_pdf(self, output_filename):
         # First pass to count pages

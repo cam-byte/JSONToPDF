@@ -4,14 +4,14 @@ import os
 
 # Reasonable margins for clean layout
 MARGINS = {
-    'x': 60,          # Reasonable margin
-    'bottom': 60      # Reasonable bottom margin
+    'x': 60,  # Reasonable margin
+    'bottom': 60  # Reasonable bottom margin
 }
 
 # Normal field dimensions
 FIELD_DIMENSIONS = {
     'width': 510,
-    'height': 18      # Slightly smaller but readable
+    'height': 18  # Slightly smaller but readable
 }
 
 # Logo path handling
@@ -44,6 +44,15 @@ COLORS = {
     'background': colors.white
 }
 
+# Fields that should break out of groups and be full-width
+FULL_WIDTH_FIELDS = {
+    'preferred_contact',  # Preferred Method of Contact radio button
+    'acknowledgement',    # Acknowledgement checkbox with paragraph text
+    # Add more field names here as needed:
+    # 'special_instructions',
+    # 'emergency_contact_notes',
+}
+
 # Clean group configurations with reasonable spacing
 GROUP_CONFIGS = {
     'form_container': {
@@ -56,17 +65,17 @@ GROUP_CONFIGS = {
         'widths': [1.0],
         'spacing': 0
     },
-    '*name_details': {
+    'name_details': {
         'columns': 3,
         'widths': [0.4, 0.4, 0.2],  # First Name (40%), Last Name (40%), Middle (20%)
-        'spacing': 20  # Increased spacing to prevent overlap
+        'spacing': 8  # Increased spacing to prevent overlap
     },
     'contact_information': {
         'columns': 4,  # Changed from 2 to 4 to handle the 4 fields you have
         'widths': [0.25, 0.25, 0.25, 0.25],  # Equal width for home/cell/work phone + preferred contact
         'spacing': 15
     },
-    '*address_details': {
+    'address_details': {
         'columns': 4,
         'widths': [0.5, 0.2, 0.15, 0.15],  # Address (50%), City (20%), State (15%), Zip (15%)
         'spacing': 12  # Slightly more spacing
@@ -92,8 +101,8 @@ GROUP_CONFIGS = {
         'spacing': 0
     },
     'women_only': {
-        'columns': 2,
-        'widths': [0.48, 0.48],
+        'columns': 1,
+        'widths': [1],
         'spacing': 20
     },
     'pharmacy_information': {

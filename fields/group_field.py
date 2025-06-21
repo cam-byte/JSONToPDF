@@ -1,4 +1,4 @@
-# fields/group_field.py - IMPROVED VERSION WITH BETTER ROW ALIGNMENT
+# fields/group_field.py - SIMPLE VERSION WITHOUT NESTING SUPPORT
 class GroupField:
     def __init__(self, generator, canvas):
         self.generator = generator
@@ -8,9 +8,17 @@ class GroupField:
         self.colors = generator.colors
 
     def start_group(self, group_name):
+        # List of groups that should be ignored when nested
+        ignored_nested_groups = {'substance_details', 'women_only'}
+        
+        # If we're already in a group, ignore nested group starts for problematic groups
+        if self.generator.current_group is not None and group_name in ignored_nested_groups:
+            print(f"DEBUG: Ignoring nested group '{group_name}' inside '{self.generator.current_group}'")
+            return
+        
+        print(f"DEBUG: Starting group '{group_name}'")
         self.generator.current_group = group_name
         self.generator.group_fields = []
-        
         # Store the starting Y position
         self.generator.group_start_y = self.generator.current_y
         
@@ -18,7 +26,7 @@ class GroupField:
         config = self.generator.group_configs.get(group_name, {
             'columns': 2,
             'widths': [0.5, 0.5],
-            'spacing': 15  # Increased default spacing to prevent overlap
+            'spacing': 15
         })
         
         columns = config['columns']
@@ -47,6 +55,13 @@ class GroupField:
         self.generator.group_columns = columns
 
     def end_group(self):
+        # If the current group is None (already ended or ignored), do nothing
+        if self.generator.current_group is None:
+            print("DEBUG: Ignoring group end - no active group")
+            return
+            
+        print(f"DEBUG: Ending group '{self.generator.current_group}'")
+        
         if self.generator.group_fields:
             # Enhanced row alignment logic for text wrapping
             self._align_group_rows()
@@ -84,11 +99,11 @@ class GroupField:
                 final_y = min(final_y, row_min_y)
         
         # Set the final Y position with adequate spacing
-        self.generator.current_y = final_y - 10
+        self.generator.current_y = final_y - 20
 
     def get_column_info(self, column_index):
         """Get positioning info for a specific column"""
-        if (self.generator.current_group is None or 
+        if (self.generator.current_group is None or
             not hasattr(self.generator, 'column_widths') or
             column_index >= len(self.generator.column_widths)):
             return self.margin_x, self.field_width

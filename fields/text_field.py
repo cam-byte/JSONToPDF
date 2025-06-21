@@ -1,5 +1,5 @@
 # fields/text_field.py - FIXED WITH PROPER GROUP WIDTH HANDLING
-from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, debug_group_positioning, get_effective_field_width
+from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, get_effective_field_width
 
 class TextField:
     def __init__(self, generator, canvas):
@@ -16,9 +16,6 @@ class TextField:
         current_size = c._fontsize
         current_color = c._fillColorObj
 
-        # DEBUG: Print positioning info
-        debug_group_positioning(self.generator, field_name, label or "")
-
         # Calculate field positioning
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
@@ -29,8 +26,6 @@ class TextField:
             
             # CRITICAL FIX: Use actual field width, not page width
             max_label_width = field_width * 0.88  # Use 88% of the actual column width
-            
-            print(f"DEBUG TextField: Field width = {field_width}, Max label width = {max_label_width}")
             
             # Calculate height needed for wrapped text
             label_height = calculate_wrapped_text_height(
@@ -46,18 +41,18 @@ class TextField:
             )
             
             # Update field_y based on actual label height
-            field_y = final_label_y - 5  # Space between label and field
+            field_y = final_label_y + 7  # Space between label and field
 
         # Position field below label
         field_y_position = field_y
 
-        # Draw text field
+        # Draw text field - THE KEY FIX IS HERE
         c.acroForm.textfield(
             name=field_name,
             tooltip=label,
             x=field_x,
             y=field_y_position - self.field_height,
-            width=field_width,  # Use actual field width
+            width=field_width,  # Use the calculated field_width from _get_field_position
             height=self.field_height,
             fontSize=10,
             borderWidth=0.5,
@@ -81,9 +76,10 @@ class TextField:
     def _get_field_position(self):
         """Calculate position for field within group or regular flow"""
         field_x = self.margin_x
-        field_width = self.field_width
+        field_width = self.field_width  # Default to full width
         field_y = self.generator.current_y
 
+        # Only adjust if we're in a group
         if self.generator.current_group is not None:
             group_index = len(self.generator.group_fields)
             column_index = group_index % self.generator.group_columns
@@ -94,7 +90,7 @@ class TextField:
                 field_x += sum(self.generator.column_widths[:column_index])
                 field_x += self.generator.group_spacing * column_index
             
-            # CRITICAL: Use the actual column width
+            # CRITICAL: Use the actual column width instead of full page width
             field_width = self.generator.column_widths[column_index]
             
             # Align rows properly
@@ -105,7 +101,6 @@ class TextField:
                     first_field = self.generator.group_fields[first_in_row_index]
                     field_y = first_field.get('start_y', first_field.get('y', field_y))
 
-        print(f"DEBUG _get_field_position: field_x={field_x}, field_width={field_width}, field_y={field_y}")
         return field_x, field_width, field_y
 
     def _handle_group_positioning(self, field_x, field_width, final_y, start_y):

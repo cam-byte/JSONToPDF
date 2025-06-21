@@ -1,5 +1,5 @@
 # fields/radio_button.py - FIXED TO HANDLE REPORTLAB RADIO GROUP REQUIREMENTS
-from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, debug_group_positioning
+from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height
 
 class RadioButton:
     def __init__(self, generator, canvas):
@@ -14,9 +14,6 @@ class RadioButton:
         current_font = c._fontname
         current_size = c._fontsize
         current_color = c._fillColorObj
-
-        # DEBUG: Print positioning info
-        debug_group_positioning(self.generator, field_name, label or "")
 
         # Calculate field positioning
         field_x, field_width, field_y = self._get_field_position()
@@ -33,7 +30,7 @@ class RadioButton:
                 field_label_style.color
             )
             
-            field_y = final_label_y - 15
+            field_y = final_label_y + 2
 
         # Get options
         options_list = _get_options(options)
@@ -80,7 +77,7 @@ class RadioButton:
         
         for value, option_label in options_list:
             # Check if we have space for this option
-            option_width = 15 + c.stringWidth(option_label, "Helvetica", 9) + 20
+            option_width = 3 + c.stringWidth(option_label, "Helvetica", 9) + 20
             if x_offset + option_width > max_width and x_offset > 0:
                 break  # Stop if we'd exceed available width
             
@@ -100,7 +97,7 @@ class RadioButton:
                 )
                 
                 # Draw option label
-                c.drawString(field_x + x_offset + 15, field_y - 5, option_label)
+                c.drawString(field_x + x_offset + 15, field_y - 6, option_label)
                 x_offset += option_width
                 
             except Exception as e:
@@ -152,7 +149,7 @@ class RadioButton:
                     "Helvetica", 9, self.colors['primary']
                 )
                 
-                current_y = final_option_y - 8  # Space between options
+                current_y = final_option_y - 1  # Space between options
                 
             except Exception as e:
                 print(f"Error creating radio button {field_name}:{value} - {e}")
