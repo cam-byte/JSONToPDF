@@ -35,23 +35,35 @@ def _check_page_break(generator, canvas, needed_height):
     return False
 
 def _calculate_field_height(field_type, label, options, field_width, field_height, label_styles):
-    """Calculate approximate height needed for a field"""
-    base_height = 40
-    
-    if field_type == 'textarea':
-        base_height = 80
-    elif field_type in ['radio', 'checkbox']:
+    """Enhanced field height calculation"""
+    if field_type == 'checkbox':
+        # For checkboxes with long text, we need to account for wrapping
+        if isinstance(options, dict) and 'checked' in options:
+            text = options['checked']
+            if text and len(text) > 50:  # Long text needs more height
+                # Rough calculation for wrapped text
+                char_width = 6  # Approximate character width
+                chars_per_line = max(field_width // char_width, 20)
+                lines = len(text) // chars_per_line + 1
+                return max(30, lines * 15)  # Minimum 30, or calculated height
+        return 25
+    elif field_type == 'textarea':
+        return 80
+    elif field_type in ['radio']:
         option_count = len(_get_options(options)) if options else 2
-        base_height = 20 + (option_count * 18)
+        return 20 + (option_count * 18)
     elif field_type == 'label':
         if '<h1>' in str(label).lower():
-            base_height = 25
+            return 30
         elif '<h3>' in str(label).lower():
-            base_height = 20
-        else:
-            base_height = 15
-    
-    return base_height
+            return 25
+        elif '<h4>' in str(label).lower():
+            return 20
+        elif '<p>' in str(label).lower():
+            return 40  # Paragraphs need more space
+        return 15
+    else:
+        return field_height
 
 def _prepare_logo_image(logo_path):
     """Prepare logo image for PDF inclusion"""
@@ -59,7 +71,6 @@ def _prepare_logo_image(logo_path):
         return None
     
     try:
-        # For reportlab, we can use ImageReader directly
         return ImageReader(logo_path)
     except Exception as e:
         print(f"Error preparing logo image: {e}")
@@ -179,13 +190,10 @@ def get_effective_field_width(generator):
         group_index = len(generator.group_fields)
         column_index = group_index % generator.group_columns
         effective_width = generator.column_widths[column_index]
-        print(f"DEBUG: Using column width: {effective_width} for column {column_index}")
         return effective_width
     else:
-        print(f"DEBUG: Using full field width: {generator.field_width}")
         return generator.field_width
 
-# Legacy function names for compatibility
 def _wrap_text(text, max_width, font_size=10, font_name="Helvetica"):
     """Wrap text based on actual string width in points using ReportLab."""
     if not text:
@@ -211,7 +219,6 @@ def _wrap_text(text, max_width, font_size=10, font_name="Helvetica"):
     
     return lines
 
-# Additional utility functions that might be used elsewhere
 def format_phone_number(phone):
     """Format phone number for display"""
     if not phone:
