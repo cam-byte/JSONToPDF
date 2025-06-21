@@ -72,14 +72,12 @@ class ModernPDFFormGenerator:
         """Get the first key from the JSON data (the main form identifier)"""
         if isinstance(self.data, dict) and self.data:
             first_key = list(self.data.keys())[0]
-            print(f"Using form key: {first_key}")
             return first_key
         return None
 
     def _find_form_data(self):
         """Find the actual form data structure in the JSON"""
         if not self.form_key:
-            print("No form key found, using entire JSON as form data")
             return self.data
             
         # Navigate through the structure: first_key -> content -> nested_form_key -> fields
@@ -90,7 +88,6 @@ class ModernPDFFormGenerator:
                 # Look for the nested form key (usually similar to main key but different)
                 for key, value in content.items():
                     if isinstance(value, dict) and 'fields' in value:
-                        print(f"Found form data at: {self.form_key}.content.{key}")
                         return value
                         
             # Fallback: search recursively
@@ -197,7 +194,6 @@ class ModernPDFFormGenerator:
                     radio_button.draw(field_name, label, options)
                 elif field_type == 'checkbox':
                     check_box = CheckBox(self, c)
-                    print(f"DEBUG: Drawing checkbox for {field_name} with options: {options}")
                     check_box.draw(field_name, label, options)
                 else:
                     # Fallback for unknown field types
@@ -215,9 +211,11 @@ class ModernPDFFormGenerator:
     def _process_fields(self, c, total_pages=None):
         fields = self._get_fields()
         num_fields = len(fields)
+        
         i = 0
         while i < num_fields:
             field = fields[i]
+            
             label = field.get('label', '')
             field_name = field.get('name', '')
             field_type = field.get('type', '').lower().strip()
