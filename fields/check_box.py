@@ -39,37 +39,21 @@ class CheckBox:
 
     def _calculate_dynamic_spacing(self, field_name, label, options):
         """Calculate appropriate spacing based on checkbox context"""
-        base_spacing = 10  # Minimum spacing
+        base_spacing = 5  # Minimum spacing
         
         # Get the checkbox text to analyze
         checkbox_text = self._get_checkbox_text(label, options)
         
         # Factor 1: Text length - longer text needs more spacing
         if len(checkbox_text) > 200:
-            text_spacing = 25  # Very long text (like acknowledgements)
+            text_spacing = 10  # Very long text (like acknowledgements)
         elif len(checkbox_text) > 100:
-            text_spacing = 15  # Medium long text
+            text_spacing = 5  # Medium long text
         else:
-            text_spacing = 5   # Short text
-        
-        # Factor 2: Check what came before this checkbox
-        previous_element_spacing = self._get_previous_element_spacing()
-        
-        # Factor 3: Special cases based on field name
-        special_spacing = 0
-        if 'acknowledgement' in field_name.lower():
-            special_spacing = 20  # Acknowledgements need extra space
-        elif 'signature' in field_name.lower():
-            special_spacing = 15  # Signature-related checkboxes
-        
-        # Factor 4: If checkbox has no label but long text in options
-        label_spacing = 0
-        if not label or not label.strip():
-            if len(checkbox_text) > 50:
-                label_spacing = 10  # No label but long text
+            text_spacing = 0  # Short text
         
         # Combine all factors, but cap at reasonable maximum
-        total_spacing = base_spacing + text_spacing + previous_element_spacing + special_spacing + label_spacing
+        total_spacing = base_spacing + text_spacing
         return min(total_spacing, 60)  # Cap at 60 points max
 
     def _get_checkbox_text(self, label, options):
@@ -99,9 +83,6 @@ class CheckBox:
             return 5  # Less spacing needed
         else:
             return 10  # Standard spacing
-        
-        # TODO: Could enhance this by tracking previous field types
-        # in the generator and adjusting spacing accordingly
 
     def _draw_single_checkbox(self, c, field_name, label, field_x, field_width, field_y, starting_y):
         # Extract checkbox text
@@ -168,7 +149,6 @@ class CheckBox:
         if label and label.strip():
             style = self.generator.label_manager.get_label_style('checkbox', label)
             self.generator.label_manager.draw_label(c, label, style)
-            self.generator.current_y -= 8
 
         current_y = self.generator.current_y
         c.setFont("Helvetica", 9)
@@ -177,7 +157,6 @@ class CheckBox:
         # Layout settings
         checkbox_size = 12
         padding = 6
-        option_spacing = 30
         max_label_width = 80
 
         available_width = field_width
@@ -190,6 +169,18 @@ class CheckBox:
         for i, (value, option_label) in enumerate(options_list):
             clean_option_label = _strip_html_tags(option_label)
             label_width = min(stringWidth(clean_option_label, "Helvetica", 9), max_label_width)
+            
+            # DYNAMIC SPACING based on label length
+            text_length = len(clean_option_label)
+            if text_length <= 10:
+                option_spacing = 10  # Your baseline that works well
+            elif text_length <= 15:
+                option_spacing = 15  # Slight increase for medium text
+            elif text_length <= 25:
+                option_spacing = 25  # More space for longer text
+            else:
+                option_spacing = 35  # Even more space for very long text
+            
             total_width = checkbox_size + padding + label_width + option_spacing
 
             if current_x + total_width > start_x + available_width:
@@ -212,7 +203,7 @@ class CheckBox:
             )
 
             label_x = current_x + checkbox_size + padding
-            label_y = current_y
+            label_y = current_y - 7
             c.drawString(label_x, label_y, clean_option_label)
             current_x += total_width
 
@@ -221,7 +212,7 @@ class CheckBox:
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)
         else:
-            self.generator.current_y = final_field_y
+            self.generator.current_y = final_field_y - 5
 
     def _get_field_position(self):
         """Calculate position for field within group or regular flow"""
