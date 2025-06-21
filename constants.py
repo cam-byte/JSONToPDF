@@ -4,7 +4,7 @@ import os
 
 # Reasonable margins for clean layout
 MARGINS = {
-    'x': 60,  # Reasonable margin
+    'x': 50,  # Reasonable margin
     'bottom': 60  # Reasonable bottom margin
 }
 
@@ -54,6 +54,8 @@ FULL_WIDTH_FIELDS = {
 }
 
 # Clean group configurations with reasonable spacing
+# constants.py - FIXED FOR ACTUAL JSON STRUCTURE
+
 GROUP_CONFIGS = {
     'form_container': {
         'columns': 1,
@@ -67,61 +69,30 @@ GROUP_CONFIGS = {
     },
     'name_details': {
         'columns': 3,
-        'widths': [0.43, 0.43, 0.14],  # Based on CSS: 43%, 43%, 14%
+        'widths': [0.43, 0.43, 0.14],
         'spacing': 8
     },
     'phone_details': {
         'columns': 3,
-        'widths': [0.33, 0.33, 0.34],  # Based on CSS: 33%, 33%, 33%
+        'widths': [0.33, 0.33, 0.34],
         'spacing': 10
     },
     'address_details': {
         'columns': 4,
-        'widths': [0.5, 0.2, 0.1, 0.2],  # Based on CSS: 50%, 20%, 10%, 20%
+        'widths': [0.5, 0.2, 0.1, 0.2],
         'spacing': 12
-    },
-    'guardian_details': {
-        'columns': 2,
-        'widths': [0.5, 0.5],
-        'spacing': 20
-    },
-    'contact_information': {
-        'columns': 3,
-        'widths': [0.33, 0.33, 0.34],  # Three phone fields
-        'spacing': 15
-    },
-    # Column-based groups from CSS
-    '1_col': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'one_column': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    '2_cols': {
-        'columns': 2,
-        'widths': [0.5, 0.5],
-        'spacing': 20
     },
     'two_columns': {
         'columns': 2,
         'widths': [0.5, 0.5],
         'spacing': 20
     },
-    '4_cols': {
-        'columns': 4,
-        'widths': [0.25, 0.25, 0.25, 0.25],
-        'spacing': 15
-    },
     'four_columns': {
         'columns': 4,
         'widths': [0.25, 0.25, 0.25, 0.25],
         'spacing': 15
     },
-    # Dental chart groups
+    # Dental chart - FIXED to match your JSON structure
     'permanent': {
         'columns': 1,
         'widths': [1.0],
@@ -143,27 +114,21 @@ GROUP_CONFIGS = {
         'spacing': 0
     },
     'tooth_container': {
-        'columns': 16,  # 16 teeth per row for permanent, 10 for deciduous
-        'widths': [0.0625] * 16,  # Equal spacing
-        'spacing': 1  # Minimal spacing between teeth (1px in CSS)
+        'columns': 1,  # FIXED: This contains the row, not individual teeth
+        'widths': [1.0],
+        'spacing': 0
     },
     'tooth': {
+        'columns': 1,  # FIXED: Each tooth is individual, not 16 columns
+        'widths': [1.0],
+        'spacing': 2  # Minimal spacing between individual teeth
+    },
+    # Other groups
+    'indent_x1': {
         'columns': 1,
         'widths': [1.0],
         'spacing': 0
     },
-    # Indentation groups
-    'indent_x1': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0  # Handled by margin-left in CSS
-    },
-    'indent_x2': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0  # Handled by margin-left in CSS
-    },
-    # Special groups
     'substance_details': {
         'columns': 1,
         'widths': [1.0],
@@ -175,47 +140,6 @@ GROUP_CONFIGS = {
         'spacing': 20
     },
     'pharmacy_information': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    # Layout containers
-    'card': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'card_head': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'card_body': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'scroll_box': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'inline_container': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'vertical_list': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    't_boxes': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 0
-    },
-    'top_aligned_boxes': {
         'columns': 1,
         'widths': [1.0],
         'spacing': 0
