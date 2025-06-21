@@ -14,7 +14,6 @@ class GroupField:
         if self.generator.current_group is not None:
             return
         
-        print(f"DEBUG: Starting group '{group_name}'")
         self.generator.current_group = group_name
         self.generator.group_fields = []
         # Store the starting Y position
@@ -55,10 +54,7 @@ class GroupField:
     def end_group(self):
         # If the current group is None (already ended or ignored), do nothing
         if self.generator.current_group is None:
-            print("DEBUG: Ignoring group end - no active group")
             return
-            
-        print(f"DEBUG: Ending group '{self.generator.current_group}'")
         
         if self.generator.group_fields:
             # Enhanced row alignment logic for text wrapping
