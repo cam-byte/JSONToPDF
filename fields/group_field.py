@@ -1,4 +1,4 @@
-# fields/group_field.py - Simplified version
+# fields/group_field.py - SIMPLE VERSION WITHOUT NESTING SUPPORT
 class GroupField:
     def __init__(self, generator, canvas):
         self.generator = generator
@@ -8,14 +8,22 @@ class GroupField:
         self.colors = generator.colors
 
     def start_group(self, group_name):
+        # List of groups that should be ignored when nested
+        ignored_nested_groups = {'substance_details', 'women_only'}
+        
+        if self.generator.current_group is not None:
+            return
+        
         self.generator.current_group = group_name
         self.generator.group_fields = []
+        # Store the starting Y position
+        self.generator.group_start_y = self.generator.current_y
         
         # Get group configuration
         config = self.generator.group_configs.get(group_name, {
-            'columns': 1,
-            'widths': [1.0],
-            'spacing': 10
+            'columns': 2,
+            'widths': [0.5, 0.5],
+            'spacing': 15
         })
         
         columns = config['columns']
@@ -24,23 +32,16 @@ class GroupField:
         
         # Ensure we have the right number of widths
         if len(widths) != columns:
-            # Fix it by extending or truncating
-            if len(widths) < columns:
-                # Add equal remaining width
-                remaining = 1.0 - sum(widths)
-                additional = remaining / (columns - len(widths))
-                widths.extend([additional] * (columns - len(widths)))
-            else:
-                widths = widths[:columns]
+            widths = [1.0 / columns] * columns
         
-        # Normalize widths to proportions (handle both decimal and integer formats)
+        # Normalize widths to proportions
         total = sum(widths)
         if total == 0:
             widths = [1.0 / columns] * columns
         else:
             widths = [w / total for w in widths]
         
-        # Calculate actual pixel widths
+        # Calculate actual pixel widths with proper spacing
         total_spacing = spacing * (columns - 1) if columns > 1 else 0
         available_width = self.field_width - total_spacing
         
@@ -49,55 +50,62 @@ class GroupField:
         ]
         self.generator.group_spacing = spacing
         self.generator.group_columns = columns
-        
-        return self.generator.current_y
 
     def end_group(self):
-        if self.generator.group_fields:
-            # Find the lowest Y position from all fields
-            min_y = min(f['y'] for f in self.generator.group_fields)
-            self.generator.current_y = min_y - (self.generator.field_height + 25)
+        # If the current group is None (already ended or ignored), do nothing
+        if self.generator.current_group is None:
+            return
         
-        print(f"Ended group {self.generator.current_group}, new Y: {self.generator.current_y}")
-
+        if self.generator.group_fields:
+            # Enhanced row alignment logic for text wrapping
+            self._align_group_rows()
+        
         # Reset group variables
         self.generator.current_group = None
         self.generator.group_fields = []
         self.generator.column_widths = None
         self.generator.group_spacing = None
         self.generator.group_columns = None
-        
-        return self.generator.current_y
+        self.generator.group_start_y = None
 
-    def get_field_position(self, field_index):
-        """Calculate position for field within group"""
-        if not self.generator.current_group:
-            return self.margin_x, self.field_width, self.generator.current_y
+    def _align_group_rows(self):
+        """Align fields in rows properly, accounting for text wrapping"""
+        if not self.generator.group_fields:
+            return
         
-        column_index = field_index % self.generator.group_columns
-        row_index = field_index // self.generator.group_columns
+        columns = self.generator.group_columns
+        rows = {}
         
-        # Calculate X position
+        # Group fields by row
+        for i, field in enumerate(self.generator.group_fields):
+            row_index = i // columns
+            if row_index not in rows:
+                rows[row_index] = []
+            rows[row_index].append(field)
+        
+        # Process each row to find the lowest Y position
+        final_y = self.generator.group_start_y
+        
+        for row_index, row_fields in rows.items():
+            if row_fields:
+                # Find the lowest Y position in this row
+                row_min_y = min(f.get('y', self.generator.group_start_y) for f in row_fields)
+                final_y = min(final_y, row_min_y)
+        
+        # Set the final Y position with adequate spacing
+        self.generator.current_y = final_y - 20
+
+    def get_column_info(self, column_index):
+        """Get positioning info for a specific column"""
+        if (self.generator.current_group is None or
+            not hasattr(self.generator, 'column_widths') or
+            column_index >= len(self.generator.column_widths)):
+            return self.margin_x, self.field_width
+        
         field_x = self.margin_x
         if column_index > 0:
-            # Add widths of previous columns plus spacing
             field_x += sum(self.generator.column_widths[:column_index])
             field_x += self.generator.group_spacing * column_index
         
         field_width = self.generator.column_widths[column_index]
-        
-        # For Y position: all fields in the same row should have the same Y
-        if column_index == 0:
-            # First column - use current Y
-            field_y = self.generator.current_y
-        else:
-            # Not first column - find the Y of the first field in this row
-            first_in_row_index = row_index * self.generator.group_columns
-            if first_in_row_index < len(self.generator.group_fields):
-                field_y = self.generator.group_fields[first_in_row_index]['y']
-            else:
-                field_y = self.generator.current_y
-        
-        print(f"Field {field_index} -> Column {column_index}: x={field_x:.0f}, width={field_width:.0f}, y={field_y}")
-        
-        return field_x, field_width, field_y
+        return field_x, field_width
