@@ -1,4 +1,4 @@
-# fields/check_box.py - DYNAMIC SPACING VERSION
+# fields/check_box.py - FIXED GAP SPACING VERSION
 
 from utils import _get_options, _strip_html_tags, wrap_text
 
@@ -69,21 +69,6 @@ class CheckBox:
         
         return _strip_html_tags(checkbox_text or "")
 
-    def _get_previous_element_spacing(self):
-        """Determine additional spacing needed based on what came before"""
-        # This would require tracking the previous element type
-        # For now, we can use a simple heuristic based on current Y position
-        # relative to where we started on the page
-        
-        page_start_y = self.generator.page_height - self.generator.margin_x
-        distance_from_top = page_start_y - self.generator.current_y
-        
-        # If we're near the top of a page, likely following a header
-        if distance_from_top < 100:
-            return 5  # Less spacing needed
-        else:
-            return 10  # Standard spacing
-
     def _draw_single_checkbox(self, c, field_name, label, field_x, field_width, field_y, starting_y):
         # Extract checkbox text
         checkbox_text = self._get_checkbox_text(label, self.current_options)
@@ -124,7 +109,8 @@ class CheckBox:
             fillColor=self.colors['background'],
             textColor=self.colors['primary'],
             borderWidth=0.5,
-            checked=False
+            checked=False,
+            fieldFlags=0
         )
 
         # Draw text
@@ -144,6 +130,41 @@ class CheckBox:
         if self.generator.current_group is not None:
             self.generator.group_fields.append({'y': final_y, 'name': field_name})
 
+    def _calculate_optimal_spacing(self, options_list):
+        """Calculate optimal spacing to fit all checkboxes with proper gaps"""
+        from reportlab.pdfbase.pdfmetrics import stringWidth
+        
+        # Minimum gap between checkboxes
+        min_gap = 15
+        checkbox_size = 12
+        padding = 6  # Space between checkbox and text
+        
+        # Find the longest label
+        max_label_width = 0
+        for value, option_label in options_list:
+            clean_label = _strip_html_tags(option_label)
+            label_width = stringWidth(clean_label, "Helvetica", 9)
+            max_label_width = max(max_label_width, label_width)
+        
+        # Calculate total width needed for one checkbox item
+        # checkbox + padding + text + gap
+        item_width = checkbox_size + padding + max_label_width + min_gap
+        
+        # See how many fit in a row with this spacing
+        available_width = self.field_width
+        items_per_row = max(1, int(available_width / item_width))
+        
+        # If we can fit all items in one row, use the calculated spacing
+        if len(options_list) <= items_per_row:
+            return item_width
+        
+        # If not, distribute available width evenly
+        actual_spacing = available_width / items_per_row
+        
+        # But don't make spacing smaller than minimum viable
+        min_viable = checkbox_size + padding + 30 + min_gap  # 30px for reasonable text
+        return max(actual_spacing, min_viable)
+
     def _draw_multiple_checkboxes(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
         # Draw main label if present
         if label and label.strip():
@@ -157,37 +178,26 @@ class CheckBox:
         # Layout settings
         checkbox_size = 12
         padding = 6
-        max_label_width = 80
 
+        # Calculate optimal spacing
+        optimal_item_width = self._calculate_optimal_spacing(options_list)
+        
         available_width = field_width
         start_x = field_x
         current_x = start_x
 
-        from reportlab.pdfbase.pdfmetrics import stringWidth
         row_max_height = checkbox_size
 
         for i, (value, option_label) in enumerate(options_list):
             clean_option_label = _strip_html_tags(option_label)
-            label_width = min(stringWidth(clean_option_label, "Helvetica", 9), max_label_width)
             
-            # DYNAMIC SPACING based on label length
-            text_length = len(clean_option_label)
-            if text_length <= 10:
-                option_spacing = 10  # Your baseline that works well
-            elif text_length <= 15:
-                option_spacing = 15  # Slight increase for medium text
-            elif text_length <= 25:
-                option_spacing = 25  # More space for longer text
-            else:
-                option_spacing = 35  # Even more space for very long text
-            
-            total_width = checkbox_size + padding + label_width + option_spacing
-
-            if current_x + total_width > start_x + available_width:
+            # Check if we need to wrap to next line
+            if current_x + optimal_item_width > start_x + available_width and current_x > start_x:
                 current_x = start_x
-                current_y -= (row_max_height + 8)
+                current_y -= (row_max_height + 12)  # Move to next row
                 row_max_height = checkbox_size
 
+            # Draw checkbox
             checkbox_name = f"{field_name}_{value}"
             c.acroForm.checkbox(
                 name=checkbox_name,
@@ -199,13 +209,17 @@ class CheckBox:
                 fillColor=self.colors['background'],
                 textColor=self.colors['primary'],
                 borderWidth=0.5,
-                checked=False
+                checked=False,
+                fieldFlags=0
             )
 
+            # Draw label
             label_x = current_x + checkbox_size + padding
             label_y = current_y - 7
             c.drawString(label_x, label_y, clean_option_label)
-            current_x += total_width
+            
+            # Move to next position
+            current_x += optimal_item_width
 
         final_field_y = current_y - row_max_height - 12
 

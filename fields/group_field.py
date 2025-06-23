@@ -11,6 +11,9 @@ class GroupField:
         # List of groups that should be ignored when nested
         ignored_nested_groups = {'substance_details', 'women_only'}
         
+        if(group_name == 'name_details' or group_name == '*name_details'):
+            print(f"name_details group started")
+        
         if self.generator.current_group is not None:
             return
         

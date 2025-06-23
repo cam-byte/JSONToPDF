@@ -72,6 +72,11 @@ GROUP_CONFIGS = {
         'widths': [0.43, 0.43, 0.14],
         'spacing': 8
     },
+    '*name_details': {
+        'columns': 3,
+        'widths': [0.43, 0.43, 0.14],
+        'spacing': 8
+    },
     'phone_details': {
         'columns': 3,
         'widths': [0.33, 0.33, 0.34],

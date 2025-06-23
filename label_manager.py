@@ -159,7 +159,7 @@ class LabelManager:
 
         # Draw underline for h1 headers if requested
         if draw_line and clean_text.strip():
-            line_y = self.generator.current_y + line_height - 5
+            line_y = self.generator.current_y + line_height + 7
             canvas.setStrokeColor(self.colors['accent'])
             canvas.setLineWidth(1)
             canvas.line(self.margin_x, line_y, self.margin_x + wrap_width, line_y)

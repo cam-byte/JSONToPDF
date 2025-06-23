@@ -284,6 +284,7 @@ class ModernPDFFormGenerator:
         form_title = self._get_form_title()
         c.setTitle(form_title)
         c.acroForm.needAppearances = True
+        c.acroForm.sigFlags = 0
         
         self.page_manager.initialize_page(c)
         self._process_fields(c)
@@ -299,6 +300,7 @@ class ModernPDFFormGenerator:
         c = canvas.Canvas(output_filename, pagesize=letter)
         c.setTitle(form_title)
         c.acroForm.needAppearances = True
+        c.acroForm.sigFlags = 0
         
         self.page_manager.initialize_page(c)
         self._process_fields(c, total_pages)
