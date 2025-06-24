@@ -1,6 +1,6 @@
 # fields/check_box.py - FIXED GAP SPACING VERSION
 
-from utils import _get_options, _strip_html_tags, wrap_text
+from utils import _get_options, _strip_html_tags, wrap_text, create_acrobat_compatible_field
 
 class CheckBox:
     def __init__(self, generator, canvas):
@@ -99,16 +99,12 @@ class CheckBox:
                 checkbox_y = checkbox_y_top - checkbox_size + 2
 
         # Draw checkbox
-        c.acroForm.checkbox(
+        create_acrobat_compatible_field(c, 'checkbox',
             name=field_name,
             tooltip=checkbox_text[:50] + "..." if len(checkbox_text) > 50 else checkbox_text,
             x=field_x,
             y=checkbox_y,
             size=checkbox_size,
-            borderColor=self.colors['border'],
-            fillColor=self.colors['background'],
-            textColor=self.colors['primary'],
-            borderWidth=0.5,
             checked=False,
             fieldFlags=0
         )
@@ -199,16 +195,12 @@ class CheckBox:
 
             # Draw checkbox
             checkbox_name = f"{field_name}_{value}"
-            c.acroForm.checkbox(
+            create_acrobat_compatible_field(c, 'checkbox',
                 name=checkbox_name,
                 tooltip=f"{field_name} - {clean_option_label}",
                 x=current_x,
                 y=current_y - checkbox_size + 2,
                 size=checkbox_size,
-                borderColor=self.colors['border'],
-                fillColor=self.colors['background'],
-                textColor=self.colors['primary'],
-                borderWidth=0.5,
                 checked=False,
                 fieldFlags=0
             )

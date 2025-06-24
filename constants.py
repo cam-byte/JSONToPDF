@@ -30,10 +30,10 @@ for path in logo_candidates:
 
 BUSINESS_INFO = {
     'logo_path': logo_path,
-    'business_name': 'Your Dental Practice',
-    'address': '123 Main Street, City, State 12345',
-    'phone': '(555) 123-4567',
-    'email': 'info@yourpractice.com'
+    'business_name': 'Paul B. Langer, D.D.S. LLC',
+    'address': '522 East Broad Street Westfield, N.J. 07090',
+    'phone': '(908) 654-3636',
+    'email': 'N.J. Specialty Permit #3857'
 }
 
 COLORS = {

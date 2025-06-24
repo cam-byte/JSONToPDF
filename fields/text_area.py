@@ -38,7 +38,7 @@ class TextArea:
         textarea_height = 50
 
         # Draw text area
-        c.acroForm.textfield(
+        create_acrobat_compatible_field(c, 'textfield',
             name=field_name,
             tooltip=label,
             x=field_x,
@@ -46,11 +46,7 @@ class TextArea:
             width=field_width,
             height=textarea_height,
             fontSize=10,
-            borderWidth=0.5,
-            borderColor=self.colors['border'],
-            fillColor=self.colors['background'],
-            textColor=self.colors['primary'],
-            fieldFlags=4096
+            fieldFlags=4096  # Multi-line flag for textarea
         )
 
         final_field_y = field_y_position - textarea_height - 10

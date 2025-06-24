@@ -1,5 +1,5 @@
 # fields/text_field.py - FIXED WITH PROPER GROUP WIDTH HANDLING
-from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, get_effective_field_width
+from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, get_effective_field_width, create_acrobat_compatible_field
 
 class TextField:
     def __init__(self, generator, canvas):
@@ -47,18 +47,14 @@ class TextField:
         field_y_position = field_y
 
         # Draw text field - THE KEY FIX IS HERE
-        c.acroForm.textfield(
+        create_acrobat_compatible_field(c, 'textfield',
             name=field_name,
             tooltip=label,
             x=field_x,
             y=field_y_position - self.field_height,
-            width=field_width,  # Use the calculated field_width from _get_field_position
+            width=field_width,
             height=self.field_height,
             fontSize=10,
-            borderWidth=0.5,
-            borderColor=self.colors['border'],
-            fillColor=self.colors['background'],
-            textColor=self.colors['primary'],
             fieldFlags=0
         )
 

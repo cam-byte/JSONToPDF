@@ -47,7 +47,7 @@ class SelectField:
             tooltip_text = label
 
         # Draw as text field with options in tooltip
-        c.acroForm.textfield(
+        create_acrobat_compatible_field(c, 'textfield',
             name=field_name,
             tooltip=tooltip_text,
             x=field_x,
@@ -55,10 +55,6 @@ class SelectField:
             width=field_width,
             height=self.field_height,
             fontSize=10,
-            borderWidth=0.5,
-            borderColor=self.colors['border'],
-            fillColor=self.colors['background'],
-            textColor=self.colors['primary'],
             fieldFlags=0
         )
 

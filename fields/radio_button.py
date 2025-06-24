@@ -1,5 +1,6 @@
-# fields/radio_button.py - FIXED: Clean radio buttons with proper capitalization
+# fields/radio_button.py - FIXED: Color issue resolved
 from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height
+from reportlab.lib import colors  # ADD THIS IMPORT
 
 class RadioButton:
     def __init__(self, generator, canvas):
@@ -30,12 +31,12 @@ class RadioButton:
                 field_label_style.color
             )
             
-            field_y = final_label_y + 7  # Better spacing after label
+            field_y = final_label_y + 7
 
         # Get options and ensure proper capitalization
         options_list = _get_options(options)
         if not options_list:
-            options_list = [('Yes', 'Yes'), ('No', 'No')]  # Default Yes/No with proper caps
+            options_list = [('Yes', 'Yes'), ('No', 'No')]
 
         # Capitalize all option values and labels
         options_list = [(value.capitalize() if isinstance(value, str) else value, 
@@ -62,22 +63,20 @@ class RadioButton:
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
         
-        # ALWAYS use horizontal layout - no vertical option
         return self._draw_horizontal_radio_buttons(c, field_name, options_list, field_x, field_y, field_width)
 
     def _draw_horizontal_radio_buttons(self, c, field_name, options_list, field_x, field_y, field_width):
-        """Draw radio buttons horizontally - ACTUALLY HORIZONTAL, not wrapping every option"""
+        """FIXED: Use proper Color objects instead of strings"""
         x_offset = 0
-        max_width = field_width * 0.95  # Use more of the available width
+        max_width = field_width * 0.95
         current_row_y = field_y
         
         for i, (value, option_label) in enumerate(options_list):
             option_text_width = c.stringWidth(option_label, "Helvetica", 9)
-            option_width = 18 + option_text_width + 8  # Reduced spacing between options
+            option_width = 18 + option_text_width + 8
             
-            # Only wrap if this option truly won't fit AND we're not the first option on the row
             if x_offset > 0 and x_offset + option_width > max_width:
-                current_row_y -= 25  # Move to next row
+                current_row_y -= 25
                 x_offset = 0
             
             radio_x = field_x + x_offset
@@ -85,18 +84,18 @@ class RadioButton:
             text_x = radio_x + 18
             text_y = current_row_y - 12
             
-            # Create radio button
+            # FIXED: Use actual Color objects, not strings
             c.acroForm.radio(
-                name=field_name,  # SAME NAME for all buttons in group!
+                name=field_name,
                 tooltip=f"{field_name}: {option_label}",
                 value=value,
                 selected=0,
                 x=radio_x,
                 y=radio_y,
                 size=12,
-                borderColor=self.colors.get('border', 'black'),
-                fillColor=self.colors.get('background', 'white'),
-                textColor=self.colors.get('primary', 'black'),
+                borderColor=colors.black,      # Use colors.black not 'black'
+                fillColor=colors.white,        # Use colors.white not 'white'
+                textColor=colors.black,        # Use colors.black not 'black'
                 borderWidth=1,
                 forceBorder=True,
                 fieldFlags=49152,
@@ -104,7 +103,7 @@ class RadioButton:
             )
             
             # Draw option label
-            c.setFillColor(self.colors.get('primary', 'black'))
+            c.setFillColor(colors.black)  # Use colors.black not string
             c.drawString(text_x, text_y, option_label)
             x_offset += option_width
         

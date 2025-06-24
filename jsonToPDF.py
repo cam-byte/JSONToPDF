@@ -1,9 +1,12 @@
-# jsonToPDF.py - CLEAN, READABLE LAYOUT (NO PAGE COUNT OPTIMIZATION)
+import os
+from dotenv import load_dotenv
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
 import json
-import os
+
+# Load environment variables from .env file
+load_dotenv()
 
 from constants import (
     MARGINS, 
@@ -29,11 +32,8 @@ class ModernPDFFormGenerator:
         self.data = json_data
         self.page_width, self.page_height = letter
         
-        # Register fonts
-        pdfmetrics.registerFont(pdfmetrics.Font('Helvetica', 'Helvetica', 'WinAnsiEncoding'))
-        pdfmetrics.registerFont(pdfmetrics.Font('Helvetica-Bold', 'Helvetica-Bold', 'WinAnsiEncoding'))
-        pdfmetrics.registerFont(pdfmetrics.Font('Helvetica-Oblique', 'Helvetica-Oblique', 'WinAnsiEncoding'))
-        pdfmetrics.registerFont(pdfmetrics.Font('Helvetica-BoldOblique', 'Helvetica-BoldOblique', 'WinAnsiEncoding'))
+        # REMOVED: Font registration - using standard fonts instead
+        # Standard fonts like 'Helvetica', 'Helvetica-Bold' are always available
         
         # Clean, reasonable settings
         self.margin_x = MARGINS['x']
@@ -67,6 +67,13 @@ class ModernPDFFormGenerator:
         # Get the first key and parse form data
         self.form_key = self._get_first_form_key()
         self.form_data = self._find_form_data()
+        
+    def _setup_canvas_for_acrobat(self, c):
+        """CRITICAL: Set up canvas for Adobe Acrobat compatibility"""
+        # Use only standard PDF fonts that don't need registration
+        c.setFont('Helvetica', 12)  # Standard font, always available
+        c.setFillColorRGB(0, 0, 0)  # Explicit black text
+        c.setStrokeColorRGB(0, 0, 0)  # Explicit black stroke
 
     def _get_first_form_key(self):
         """Get the first key from the JSON data (the main form identifier)"""
@@ -273,18 +280,27 @@ class ModernPDFFormGenerator:
                 if total_pages:
                     self.page_manager.draw_page_number(c, self.current_page, total_pages)
 
-
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
             i += 1
 
     def generate_pdf(self, output_filename):
+        """Updated with minimal Adobe Acrobat compatibility fixes"""
         # First pass to count pages
-        c = canvas.Canvas(output_filename, pagesize=letter)
+        c = canvas.Canvas(
+            output_filename, 
+            pagesize=letter,
+            pageCompression=0,  # Better Adobe compatibility
+            encoding='WinAnsiEncoding'  # Most compatible encoding
+        )
+        
         form_title = self._get_form_title()
         c.setTitle(form_title)
         c.acroForm.needAppearances = True
         c.acroForm.sigFlags = 0
+        
+        # CRITICAL: Set up for Adobe compatibility
+        self._setup_canvas_for_acrobat(c)
         
         self.page_manager.initialize_page(c)
         self._process_fields(c)
@@ -297,19 +313,85 @@ class ModernPDFFormGenerator:
         self.current_group = None
         self.group_fields = []
         
-        c = canvas.Canvas(output_filename, pagesize=letter)
+        c = canvas.Canvas(
+            output_filename, 
+            pagesize=letter,
+            pageCompression=0,  # Better Adobe compatibility
+            encoding='WinAnsiEncoding'  # Most compatible encoding
+        )
         c.setTitle(form_title)
         c.acroForm.needAppearances = True
         c.acroForm.sigFlags = 0
+        
+        # CRITICAL: Set up for Adobe compatibility again
+        self._setup_canvas_for_acrobat(c)
         
         self.page_manager.initialize_page(c)
         self._process_fields(c, total_pages)
         c.save()
         
+        # TEMPORARILY DISABLE PyPDF2 POST-PROCESSING TO TEST
+        # self._fix_pdf_for_acrobat(output_filename)
+        print("PyPDF2 post-processing DISABLED for testing")
+        
         print(f"PDF generated with {total_pages} pages")
+        
+    def _fix_pdf_for_acrobat_minimal(self, pdf_path):
+        """Minimal PDF fix that doesn't interfere with radio buttons"""
+        try:
+            from PyPDF2 import PdfReader, PdfWriter
+            from PyPDF2.generic import BooleanObject, NameObject
+            
+            reader = PdfReader(pdf_path)
+            writer = PdfWriter()
+            
+            # ONLY add NeedAppearances flag, don't modify anything else
+            for page_num, page in enumerate(reader.pages):
+                writer.add_page(page)
+            
+            # Add ONLY the NeedAppearances flag to the catalog
+            if hasattr(writer, '_root_object') and writer._root_object:
+                if "/AcroForm" not in writer._root_object:
+                    writer._root_object[NameObject("/AcroForm")] = {}
+                writer._root_object[NameObject("/AcroForm")][NameObject("/NeedAppearances")] = BooleanObject(True)
+            
+            # Write back
+            with open(pdf_path, "wb") as output_file:
+                writer.write(output_file)
+                
+            print("Minimal PDF processing applied")
+            
+        except Exception as e:
+            print(f"Minimal PDF processing failed: {e}")
+        
+    def generate_pdf_no_postprocessing(self, output_filename):
+        """Generate PDF without any post-processing that might break radio buttons"""
+        # Single pass - no post-processing
+        c = canvas.Canvas(
+            output_filename, 
+            pagesize=letter,
+            pageCompression=0,
+            encoding='WinAnsiEncoding'
+        )
+        
+        form_title = self._get_form_title()
+        c.setTitle(form_title)
+        
+        # Set needAppearances directly in ReportLab
+        c.acroForm.needAppearances = True
+        c.acroForm.sigFlags = 0
+        
+        self._setup_canvas_for_acrobat(c)
+        self.page_manager.initialize_page(c)
+        self._process_fields(c)
+        c.save()
+        
+        print(f"PDF generated without post-processing")
 
+
+# FIXED: Functions moved outside the class (correct indentation)
 def generate_form_pdf(json_file_path, output_pdf_path):
-    # Check if JSON file exists
+    """Generate form PDF from JSON file"""
     if not os.path.exists(json_file_path):
         raise FileNotFoundError(f"JSON file not found: {json_file_path}")
     
@@ -319,9 +401,16 @@ def generate_form_pdf(json_file_path, output_pdf_path):
     generator = ModernPDFFormGenerator(form_data)
     generator.generate_pdf(output_pdf_path)
 
+
 if __name__ == "__main__":
-    json_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/form.json'
-    output_path = '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf'
+    # Get paths from environment variables with fallback defaults
+    json_path = os.getenv('JSON_INPUT_PATH', 
+                         '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/form.json')
+    output_path = os.getenv('PDF_OUTPUT_PATH', 
+                           '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf')
+    
+    print(f"Using JSON input path: {json_path}")
+    print(f"Using PDF output path: {output_path}")
     
     try:
         if os.path.exists(output_path):

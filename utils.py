@@ -269,3 +269,49 @@ def convert_to_points(value, unit='pt'):
         return value * 2.835
     else:
         return value  # Assume points if unknown
+    
+def create_acrobat_compatible_field(canvas, field_type, **kwargs):
+    """Create form fields with explicit Adobe Acrobat compatibility settings"""
+    form = canvas.acroForm
+    
+    # Convert color tuples to proper Color objects
+    def fix_color(color_value):
+        if isinstance(color_value, tuple):
+            if len(color_value) == 3:
+                return colors.Color(color_value[0], color_value[1], color_value[2])
+            elif len(color_value) == 4:
+                return colors.Color(color_value[0], color_value[1], color_value[2], color_value[3])
+        return color_value
+    
+    # Force explicit settings that Adobe Acrobat expects with proper Color objects
+    if field_type == 'textfield':
+        # Fix color parameters
+        kwargs['borderColor'] = fix_color(kwargs.get('borderColor', colors.black))
+        kwargs['fillColor'] = fix_color(kwargs.get('fillColor', colors.white))
+        kwargs['textColor'] = fix_color(kwargs.get('textColor', colors.black))
+        
+        form.textfield(
+            borderWidth=kwargs.get('borderWidth', 1),
+            forceBorder=True,  # Ensure borders are visible
+            **kwargs
+        )
+    elif field_type == 'checkbox':
+        # Fix color parameters
+        kwargs['borderColor'] = fix_color(kwargs.get('borderColor', colors.black))
+        kwargs['fillColor'] = fix_color(kwargs.get('fillColor', colors.white))
+        kwargs['textColor'] = fix_color(kwargs.get('textColor', colors.black))
+        
+        form.checkbox(
+            borderWidth=kwargs.get('borderWidth', 1),
+            **kwargs
+        )
+    elif field_type == 'radio':
+        # Fix color parameters
+        kwargs['borderColor'] = fix_color(kwargs.get('borderColor', colors.black))
+        kwargs['fillColor'] = fix_color(kwargs.get('fillColor', colors.white))
+        kwargs['textColor'] = fix_color(kwargs.get('textColor', colors.black))
+        
+        form.radio(
+            borderWidth=kwargs.get('borderWidth', 1),
+            **kwargs
+        )
