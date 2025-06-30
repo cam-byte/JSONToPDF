@@ -37,6 +37,14 @@ LABEL_STYLES = {
         spacing_after=6,
         alignment='left'
     ),
+    'span': LabelStyle(
+        font_name='Helvetica',  # Standard font
+        font_size=8,
+        color=colors.black,
+        spacing_before=6,
+        spacing_after=6,
+        alignment='left'
+    ),
     'h5': LabelStyle(
         font_name='Helvetica',  # Standard font
         font_size=9,

@@ -11,8 +11,6 @@ class TextField:
         self.field_height = generator.field_height
 
     def draw(self, field_name, label):
-        print(f"📝 Drawing text field: '{field_name}' with label: '{label}'")
-        print(f"   Current group: {self.generator.current_group}")
         
         c = self.canvas
         current_font = c._fontname
@@ -23,7 +21,6 @@ class TextField:
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
         
-        print(f"   📍 Position: x={field_x}, width={field_width}, y={field_y}")
         
         # Draw label with text wrapping using ACTUAL field width
         if label:
@@ -67,16 +64,12 @@ class TextField:
 
         # Update positioning with adequate spacing
         if self.generator.current_group is not None:
-            print(f"   📋 Adding to group (index {len(self.generator.group_fields)})")
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)
         else:
-            print(f"   📍 Not in group, updating current_y to {final_field_y - 8}")
             self.generator.current_y = final_field_y - 8  # Adequate spacing
 
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
-        
-        print(f"   ✅ Text field '{field_name}' completed")
 
     def _get_field_position(self):
         """Calculate position for field within group or regular flow"""
@@ -94,8 +87,6 @@ class TextField:
             group_index = len(self.generator.group_fields)
             column_index = group_index % self.generator.group_columns
             
-            print(f"   🔢 Group calculations: index={group_index}, column={column_index}, total_columns={self.generator.group_columns}")
-            
             # Calculate X position
             field_x = self.margin_x
             if column_index > 0:
@@ -105,7 +96,6 @@ class TextField:
             # CRITICAL: Use the actual column width instead of full page width
             field_width = self.generator.column_widths[column_index]
             
-            print(f"   📏 Column {column_index}: x={field_x}, width={field_width}")
             
             # Align rows properly
             if column_index > 0 and self.generator.group_fields:
@@ -114,9 +104,6 @@ class TextField:
                 if first_in_row_index < len(self.generator.group_fields):
                     first_field = self.generator.group_fields[first_in_row_index]
                     field_y = first_field.get('start_y', first_field.get('y', field_y))
-                    print(f"   📐 Row alignment: using y={field_y} from first field in row")
-        else:
-            print(f"   📍 Not in valid group - using full width. Group: {self.generator.current_group}, Columns: {getattr(self.generator, 'group_columns', 'None')}")
 
         return field_x, field_width, field_y
 
@@ -131,7 +118,6 @@ class TextField:
         }
         
         self.generator.group_fields.append(field_info)
-        print(f"   📋 Added field to group: {field_info}")
 
         # Only check for row completion if we have valid group configuration
         if (hasattr(self.generator, 'group_columns') and 
@@ -142,6 +128,3 @@ class TextField:
             row_fields = self.generator.group_fields[row_start:]
             min_y = min(f.get('y', self.generator.current_y) for f in row_fields)
             self.generator.current_y = min_y - 8
-            print(f"   📐 Row completed, updated current_y to: {self.generator.current_y}")
-        else:
-            print(f"   📋 Field added to group, waiting for more fields or invalid group config")

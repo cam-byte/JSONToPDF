@@ -1,5 +1,5 @@
 # fields/text_area.py - WITH TEXT WRAPPING
-from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height
+from utils import _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, create_acrobat_compatible_field
 
 class TextArea:
     def __init__(self, generator, canvas):

@@ -215,6 +215,8 @@ class ModernPDFFormGenerator:
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
 
+    # In your ModernPDFFormGenerator class, update the _process_fields method:
+
     def _process_fields(self, c, total_pages=None):
         fields = self._get_fields()
         num_fields = len(fields)
@@ -273,12 +275,13 @@ class ModernPDFFormGenerator:
             )
 
             if _check_page_break(self, c, needed_height):
+                # CRITICAL: Increment page counter BEFORE initializing new page
+                self.current_page += 1
+                
                 self.page_manager.initialize_page(c)
                 if self.current_group:
                     self.group_fields = []
                     self.group_start_y = self.current_y
-                if total_pages:
-                    self.page_manager.draw_page_number(c, self.current_page, total_pages)
 
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
@@ -330,12 +333,6 @@ class ModernPDFFormGenerator:
         self._process_fields(c, total_pages)
         c.save()
         
-        # TEMPORARILY DISABLE PyPDF2 POST-PROCESSING TO TEST
-        # self._fix_pdf_for_acrobat(output_filename)
-        print("PyPDF2 post-processing DISABLED for testing")
-        
-        print(f"PDF generated with {total_pages} pages")
-        
     def _fix_pdf_for_acrobat_minimal(self, pdf_path):
         """Minimal PDF fix that doesn't interfere with radio buttons"""
         try:
@@ -359,7 +356,6 @@ class ModernPDFFormGenerator:
             with open(pdf_path, "wb") as output_file:
                 writer.write(output_file)
                 
-            print("Minimal PDF processing applied")
             
         except Exception as e:
             print(f"Minimal PDF processing failed: {e}")
@@ -386,7 +382,6 @@ class ModernPDFFormGenerator:
         self._process_fields(c)
         c.save()
         
-        print(f"PDF generated without post-processing")
 
 
 # FIXED: Functions moved outside the class (correct indentation)

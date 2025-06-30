@@ -1,4 +1,4 @@
-# page_manager.py - CLEAN HEADER LAYOUT
+# page_manager.py - HEADER ONLY ON FIRST PAGE
 from utils import _prepare_logo_image
 
 class PageManager:
@@ -10,18 +10,21 @@ class PageManager:
         self.margin_x = generator.margin_x
 
     def initialize_page(self, canvas):
-        """Initialize a new page with clean header"""
+        """Initialize a new page with conditional header"""
         # Reset Y position to top of page
         self.generator.current_y = self.page_height - self.margin_x
         
-        # Draw clean business header
-        self._draw_clean_business_header(canvas)
-        
-        # Reasonable space after business header
-        self.generator.current_y -= 35
+        # Only draw business header on first page
+        if self.generator.current_page == 1:
+            self._draw_clean_business_header(canvas)
+            # More space after business header on first page
+            self.generator.current_y -= 35
+        else:
+            # Less space from top on subsequent pages
+            self.generator.current_y -= 15
 
     def _draw_clean_business_header(self, canvas):
-        """Draw clean, professional business header"""
+        """Draw clean, professional business header (first page only)"""
         current_font = canvas._fontname
         current_size = canvas._fontsize
         current_color = canvas._fillColorObj
@@ -44,25 +47,12 @@ class PageManager:
         canvas.setFont("Helvetica", 9)
         canvas.drawString(self.margin_x, header_y - 12, self.generator.address)
         
+        # Optional: Add a subtle line under the header
+        canvas.setStrokeColor(self.colors['border'])
+        canvas.setLineWidth(0.5)
+        canvas.line(self.margin_x, header_y - 18, 
+                   self.page_width - self.margin_x, header_y - 18)
+        
         # Restore original font settings
-        canvas.setFont(current_font, current_size)
-        canvas.setFillColor(current_color)
-
-    def draw_page_number(self, canvas, current_page, total_pages):
-        """Draw page number at bottom right"""
-        current_font = canvas._fontname
-        current_size = canvas._fontsize
-        current_color = canvas._fillColorObj
-        
-        canvas.setFont("Helvetica", 9)
-        canvas.setFillColor(self.colors['secondary'])
-        page_text = f"Page {current_page} of {total_pages}"
-        text_width = canvas.stringWidth(page_text, "Helvetica", 9)
-        canvas.drawString(
-            self.page_width - self.margin_x - text_width,
-            25,
-            page_text
-        )
-        
         canvas.setFont(current_font, current_size)
         canvas.setFillColor(current_color)

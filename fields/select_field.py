@@ -1,5 +1,5 @@
 # fields/select_field.py - WITH TEXT WRAPPING
-from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height
+from utils import _get_options, _check_page_break, draw_wrapped_text, calculate_wrapped_text_height, create_acrobat_compatible_field
 
 class SelectField:
     def __init__(self, generator, canvas):

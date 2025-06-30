@@ -168,7 +168,7 @@ class CheckBox:
         # Draw main label if present
         if label and label.strip():
             style = self.generator.label_manager.get_label_style('checkbox', label)
-            self.generator.label_manager.draw_label(c, label, style)
+            self.generator.label_manager.draw_label(c, label, style, spacing_before=0, tight=True)
 
         # Use generator's current_y directly instead of local variable
         c.setFont("Helvetica", 9)
@@ -177,7 +177,7 @@ class CheckBox:
         # Layout settings
         checkbox_size = 12
         padding = 6
-        row_height = checkbox_size + 12
+        row_height = checkbox_size + 8
 
         # Calculate optimal spacing and layout
         optimal_item_width = self._calculate_optimal_spacing(options_list)

@@ -46,7 +46,6 @@ class LabelManager:
 
     def _process_list_content(self, html_text):
         """Process <ul>/<ol> and <li> tags to create formatted list text"""
-        print(f"DEBUG: Processing list content, length: {len(html_text)}")
         
         # Check if this is an ordered list (ol) or unordered list (ul)
         is_ordered_list = '<ol>' in html_text.lower() or '<ol ' in html_text.lower()
@@ -87,7 +86,6 @@ class LabelManager:
                 processed_lines.append(line)
         
         result = '\n'.join(processed_lines)
-        print(f"DEBUG: Final processed result: {result[:400]}...")
         return result
 
     def _clean_html_content(self, html_text):
@@ -102,11 +100,11 @@ class LabelManager:
         # Finally strip remaining HTML tags
         return _strip_html_tags(text)
 
-    def draw_label(self, canvas, label, style, draw_line=False, spacing_before=None):
+    def draw_label(self, canvas, label, style, draw_line=False, spacing_before=None, tight=False):
         """Draw label with enhanced HTML processing"""
-        self._draw_enhanced_label(canvas, label, style, draw_line, spacing_before)
+        self._draw_enhanced_label(canvas, label, style, draw_line, spacing_before, tight)
 
-    def _draw_enhanced_label(self, canvas, label, style, draw_line=False, spacing_before=None):
+    def _draw_enhanced_label(self, canvas, label, style, draw_line=False, spacing_before=None, tight=False):
         """Enhanced label drawing with link and list support"""
         current_font = canvas._fontname
         current_size = canvas._fontsize
@@ -151,7 +149,7 @@ class LabelManager:
         else:
             # Regular text wrapping for non-list content
             wrapped_lines = _wrap_text(clean_text, wrap_width, style.font_size, style.font_name)
-            self._draw_text_lines(canvas, wrapped_lines, line_height)
+            self._draw_text_lines(canvas, wrapped_lines, line_height, tight=tight)
 
         # Handle margins and underlines
         if (is_paragraph or is_list) and hasattr(style, 'paragraph_margin_bottom'):
@@ -235,14 +233,14 @@ class LabelManager:
         if lines_drawn > 0:
             self.generator.current_y -= style.spacing_after
 
-    def _draw_text_lines(self, canvas, wrapped_lines, line_height):
+    def _draw_text_lines(self, canvas, wrapped_lines, line_height, tight=False):
         """Draw regular text lines"""
         lines_drawn = 0
         
         for line in wrapped_lines:
             if line.strip():
                 canvas.drawString(self.margin_x, self.generator.current_y, line)
-                self.generator.current_y -= line_height
+                self.generator.current_y -= line_height - (10 if tight else 0)
                 lines_drawn += 1
 
         # Add spacing after text
