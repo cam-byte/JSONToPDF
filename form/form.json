@@ -41,7 +41,7 @@
                         "type": "label"
                     },
                     {
-                        "name": "*name_details",
+                        "name": "name_details",
                         "type": "group_start"
                     },
                     {
@@ -69,7 +69,7 @@
                         "type": "group_end"
                     },
                     {
-                        "name": "*address_details",
+                        "name": "address_details",
                         "type": "group_start"
                     },
                     {
@@ -228,7 +228,7 @@
                         "type": "group_start"
                     },
                     {
-                        "name": "*name_details",
+                        "name": "name_details",
                         "type": "group_start"
                     },
                     {
@@ -277,7 +277,7 @@
                         "required": false
                     },
                     {
-                        "name": "*address_details",
+                        "name": "address_details",
                         "type": "group_start"
                     },
                     {
@@ -418,7 +418,7 @@
                         "required": false
                     },
                     {
-                        "name": "*address_details",
+                        "name": "address_details",
                         "type": "group_start"
                     },
                     {

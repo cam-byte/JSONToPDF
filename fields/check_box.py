@@ -1,6 +1,6 @@
-# fields/check_box.py - FIXED GAP SPACING VERSION
+# fields/check_box.py - FIXED WITH PAGE BREAK HANDLING
 
-from utils import _get_options, _strip_html_tags, wrap_text, create_acrobat_compatible_field
+from utils import _get_options, _strip_html_tags, wrap_text, create_acrobat_compatible_field, _check_page_break
 
 class CheckBox:
     def __init__(self, generator, canvas):
@@ -92,7 +92,6 @@ class CheckBox:
 
         # Page break check
         if checkbox_y - needed_height < self.generator.margin_bottom:
-            from utils import _check_page_break
             if _check_page_break(self.generator, c, needed_height + 20):
                 self.generator.page_manager.initialize_page(c)
                 checkbox_y_top = self.generator.current_y
@@ -125,6 +124,8 @@ class CheckBox:
 
         if self.generator.current_group is not None:
             self.generator.group_fields.append({'y': final_y, 'name': field_name})
+
+
 
     def _calculate_optimal_spacing(self, options_list):
         """Calculate optimal spacing to fit all checkboxes with proper gaps"""
@@ -162,44 +163,64 @@ class CheckBox:
         return max(actual_spacing, min_viable)
 
     def _draw_multiple_checkboxes(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
+        """Draw multiple checkboxes with smart page break handling that minimizes page usage"""
+        
         # Draw main label if present
         if label and label.strip():
             style = self.generator.label_manager.get_label_style('checkbox', label)
             self.generator.label_manager.draw_label(c, label, style)
 
-        current_y = self.generator.current_y
+        # Use generator's current_y directly instead of local variable
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
 
         # Layout settings
         checkbox_size = 12
         padding = 6
+        row_height = checkbox_size + 12
 
-        # Calculate optimal spacing
+        # Calculate optimal spacing and layout
         optimal_item_width = self._calculate_optimal_spacing(options_list)
-        
         available_width = field_width
         start_x = field_x
         current_x = start_x
+        items_per_row = max(1, int(available_width / optimal_item_width))
 
-        row_max_height = checkbox_size
+        items_in_current_row = 0
 
         for i, (value, option_label) in enumerate(options_list):
             clean_option_label = _strip_html_tags(option_label)
             
-            # Check if we need to wrap to next line
-            if current_x + optimal_item_width > start_x + available_width and current_x > start_x:
+            # Check if we need to wrap to next line FIRST
+            if items_in_current_row >= items_per_row:
+                # Move to next row
                 current_x = start_x
-                current_y -= (row_max_height + 12)  # Move to next row
-                row_max_height = checkbox_size
+                self.generator.current_y -= row_height  # Update generator's current_y
+                items_in_current_row = 0
 
-            # Draw checkbox
+            # NOW check if this checkbox position would go off the page
+            checkbox_y_position = self.generator.current_y - checkbox_size + 2
+            
+            if checkbox_y_position < self.generator.margin_bottom:
+                # This checkbox would overflow - move to new page
+                if _check_page_break(self.generator, c, checkbox_size + 20):
+                    self.generator.page_manager.initialize_page(c)
+                    # generator.current_y is now updated by page_manager.initialize_page()
+                    current_x = start_x
+                    items_in_current_row = 0
+                    # Reset font and color after page break
+                    c.setFont("Helvetica", 9)
+                    c.setFillColor(self.colors['primary'])
+
+            # Draw checkbox at the current position
             checkbox_name = f"{field_name}_{value}"
+            final_checkbox_y = self.generator.current_y - checkbox_size + 2
+            
             create_acrobat_compatible_field(c, 'checkbox',
                 name=checkbox_name,
                 tooltip=f"{field_name} - {clean_option_label}",
                 x=current_x,
-                y=current_y - checkbox_size + 2,
+                y=final_checkbox_y,
                 size=checkbox_size,
                 checked=False,
                 fieldFlags=0
@@ -207,13 +228,14 @@ class CheckBox:
 
             # Draw label
             label_x = current_x + checkbox_size + padding
-            label_y = current_y - 7
+            label_y = self.generator.current_y - 7
             c.drawString(label_x, label_y, clean_option_label)
             
-            # Move to next position
+            # Move to next position in row
             current_x += optimal_item_width
+            items_in_current_row += 1
 
-        final_field_y = current_y - row_max_height - 12
+        final_field_y = self.generator.current_y - checkbox_size - 12
 
         if self.generator.current_group is not None:
             self._handle_group_positioning(field_x, field_width, final_field_y, starting_y)

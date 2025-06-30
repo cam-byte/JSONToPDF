@@ -48,15 +48,15 @@ COLORS = {
 FULL_WIDTH_FIELDS = {
     'preferred_contact',  # Preferred Method of Contact radio button
     'acknowledgement',    # Acknowledgement checkbox with paragraph text
-    # Add more field names here as needed:
-    # 'special_instructions',
-    # 'emergency_contact_notes',
+    'other_disease',      # Radio button that should be full width
+    'premedication_required',  # Radio button that should be full width
 }
 
 # Clean group configurations with reasonable spacing
 # constants.py - FIXED FOR ACTUAL JSON STRUCTURE
 
 GROUP_CONFIGS = {
+    # Container groups (allow nesting)
     'form_container': {
         'columns': 1,
         'widths': [1.0],
@@ -67,25 +67,37 @@ GROUP_CONFIGS = {
         'widths': [1.0],
         'spacing': 0
     },
+    'primary_insurance': {
+        'columns': 1,
+        'widths': [1.0],
+        'spacing': 0
+    },
+    
+    # Functional groups (the ones that actually control layout)
     'name_details': {
         'columns': 3,
-        'widths': [0.43, 0.43, 0.14],
+        'widths': [0.43, 0.43, 0.14],  # Last name, First name, Initial
         'spacing': 8
     },
-    '*name_details': {
+    'address_details': {
+        'columns': 4,
+        'widths': [0.5, 0.2, 0.1, 0.2],  # Address, City, State, Zip
+        'spacing': 12
+    },
+    'patient_contact': {
         'columns': 3,
-        'widths': [0.43, 0.43, 0.14],
-        'spacing': 8
+        'widths': [0.33, 0.33, 0.34],  # Email, Business Phone, Cell Phone
+        'spacing': 10
     },
     'phone_details': {
         'columns': 3,
         'widths': [0.33, 0.33, 0.34],
         'spacing': 10
     },
-    'address_details': {
-        'columns': 4,
-        'widths': [0.5, 0.2, 0.1, 0.2],
-        'spacing': 12
+    'secondary_insurance': {
+        'columns': 2,
+        'widths': [0.5, 0.5],
+        'spacing': 15
     },
     'two_columns': {
         'columns': 2,
@@ -97,7 +109,15 @@ GROUP_CONFIGS = {
         'widths': [0.25, 0.25, 0.25, 0.25],
         'spacing': 15
     },
-    # Dental chart - FIXED to match your JSON structure
+    
+    # Special groups
+    'women_only': {
+        'columns': 1,
+        'widths': [1.0],
+        'spacing': 20
+    },
+    
+    # Dental chart groups (if needed)
     'permanent': {
         'columns': 1,
         'widths': [1.0],
@@ -119,16 +139,17 @@ GROUP_CONFIGS = {
         'spacing': 0
     },
     'tooth_container': {
-        'columns': 1,  # FIXED: This contains the row, not individual teeth
+        'columns': 1,
         'widths': [1.0],
         'spacing': 0
     },
     'tooth': {
-        'columns': 1,  # FIXED: Each tooth is individual, not 16 columns
+        'columns': 1,
         'widths': [1.0],
-        'spacing': 2  # Minimal spacing between individual teeth
+        'spacing': 2
     },
-    # Other groups
+    
+    # Other utility groups
     'indent_x1': {
         'columns': 1,
         'widths': [1.0],
@@ -138,11 +159,6 @@ GROUP_CONFIGS = {
         'columns': 1,
         'widths': [1.0],
         'spacing': 0
-    },
-    'women_only': {
-        'columns': 1,
-        'widths': [1.0],
-        'spacing': 20
     },
     'pharmacy_information': {
         'columns': 1,
