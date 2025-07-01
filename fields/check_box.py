@@ -30,7 +30,7 @@ class CheckBox:
         options_list = _get_options(options)
 
         if len(options_list) == 1:
-            self._draw_single_checkbox(c, field_name, label, field_x, field_width, field_y, starting_y)
+            self._draw_single_checkbox(c, field_name, label, options_list, field_x, field_width, field_y, starting_y)
         else:
             self._draw_multiple_checkboxes(c, field_name, label, options_list, field_x, field_width, field_y, starting_y)
 
@@ -69,9 +69,10 @@ class CheckBox:
         
         return _strip_html_tags(checkbox_text or "")
 
-    def _draw_single_checkbox(self, c, field_name, label, field_x, field_width, field_y, starting_y):
-        # Extract checkbox text
-        checkbox_text = self._get_checkbox_text(label, self.current_options)
+    def _draw_single_checkbox(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
+        # Get the single option from options_list (same as multi checkbox)
+        value, option_label = options_list[0]  # Get the first (and only) option
+        checkbox_text = _strip_html_tags(option_label)  # Use the option label, not the field label
 
         style = self.generator.label_manager.get_label_style('checkbox', checkbox_text)
         font_name = style.font_name
@@ -81,10 +82,10 @@ class CheckBox:
         # Checkbox settings
         checkbox_size = 12
         checkbox_y_top = self.generator.current_y
-        checkbox_y = checkbox_y_top - checkbox_size + 2
+        checkbox_y = checkbox_y_top - checkbox_size + 7
 
         # Calculate text dimensions and check for page breaks
-        text_x = field_x + checkbox_size + 8
+        text_x = field_x + checkbox_size + 6
         max_width = self.generator.page_width - text_x - self.generator.margin_x
 
         lines, total_text_height = wrap_text(c, checkbox_text, max_width, font_name, font_size)
@@ -97,9 +98,10 @@ class CheckBox:
                 checkbox_y_top = self.generator.current_y
                 checkbox_y = checkbox_y_top - checkbox_size + 2
 
-        # Draw checkbox
+        # Draw checkbox using the value from options_list
+        checkbox_name = f"{field_name}_{value}"  # Use the actual value from options_list
         create_acrobat_compatible_field(c, 'checkbox',
-            name=field_name,
+            name=checkbox_name,  # Now uses the proper value-based name
             tooltip=checkbox_text[:50] + "..." if len(checkbox_text) > 50 else checkbox_text,
             x=field_x,
             y=checkbox_y,
@@ -112,7 +114,7 @@ class CheckBox:
         c.setFont(font_name, font_size)
         c.setFillColor(color)
         
-        text_y = checkbox_y_top
+        text_y = checkbox_y_top - 2
         for line in lines:
             c.drawString(text_x, text_y, line)
             text_y -= font_size + 4
@@ -124,8 +126,6 @@ class CheckBox:
 
         if self.generator.current_group is not None:
             self.generator.group_fields.append({'y': final_y, 'name': field_name})
-
-
 
     def _calculate_optimal_spacing(self, options_list):
         """Calculate optimal spacing to fit all checkboxes with proper gaps"""
@@ -170,6 +170,9 @@ class CheckBox:
             style = self.generator.label_manager.get_label_style('checkbox', label)
             self.generator.label_manager.draw_label(c, label, style, spacing_before=0, tight=True)
 
+        label_to_checkbox_gap = -12  # ADJUST THIS VALUE - increase for more gap, decrease for less
+        self.generator.current_y -= label_to_checkbox_gap
+        
         # Use generator's current_y directly instead of local variable
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])

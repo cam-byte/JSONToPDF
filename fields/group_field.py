@@ -172,8 +172,20 @@ class GroupField:
                 row_min_y = min(f.get('y', self.generator.group_start_y) for f in row_fields)
                 final_y = min(final_y, row_min_y)
         
-        # Set the final Y position with adequate spacing
-        final_position = final_y - 10
+        group_name = self.generator.current_group
+        
+        # Calculate appropriate spacing based on group content
+        if group_name == 'women_only':
+            # Women Only group needs extra spacing due to radio buttons and text
+            additional_spacing = 30
+        elif any(field.get('name', '').startswith('radio') or 'radio' in str(field) for field in self.generator.group_fields):
+            # Groups with radio buttons need more spacing
+            additional_spacing = 20
+        else:
+            # Default spacing for other groups
+            additional_spacing = 15
+        
+        final_position = final_y - additional_spacing
         self.generator.current_y = final_position
 
     def get_column_info(self, column_index):

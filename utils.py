@@ -19,7 +19,8 @@ def _get_options(option_data):
         return []
     
     if isinstance(option_data, dict):
-        return [(key, value) for key, value in option_data.items()]
+        # Swap so value becomes the display text
+        return [(value, value) for key, value in option_data.items()]
     elif isinstance(option_data, list):
         return [(str(i), str(item)) for i, item in enumerate(option_data)]
     else:
@@ -306,12 +307,9 @@ def create_acrobat_compatible_field(canvas, field_type, **kwargs):
             **kwargs
         )
     elif field_type == 'radio':
-        # Fix color parameters
         kwargs['borderColor'] = fix_color(kwargs.get('borderColor', colors.black))
         kwargs['fillColor'] = fix_color(kwargs.get('fillColor', colors.white))
         kwargs['textColor'] = fix_color(kwargs.get('textColor', colors.black))
+        kwargs['borderWidth'] = kwargs.get('borderWidth', 1)
         
-        form.radio(
-            borderWidth=kwargs.get('borderWidth', 1),
-            **kwargs
-        )
+        form.radio(**kwargs)
