@@ -171,10 +171,12 @@ class ModernPDFFormGenerator:
         current_color = c._fillColorObj
 
         if field_type == 'group_start':
+            from fields.group_field import GroupField
             group_field = GroupField(self, c)
             group_field.start_group(field_name)
             return
         elif field_type == 'group_end':
+            from fields.group_field import GroupField
             group_field = GroupField(self, c)
             group_field.end_group()
             return
@@ -188,32 +190,67 @@ class ModernPDFFormGenerator:
             # Handle form fields
             try:
                 if field_type in ['text', 'email', 'date']:
+                    from fields.text_field import TextField
                     text_field = TextField(self, c)
                     text_field.draw(field_name, label)
                 elif field_type == 'select':
+                    from fields.select_field import SelectField
                     select_field = SelectField(self, c)
                     select_field.draw(field_name, label, options)
                 elif field_type == 'textarea':
+                    from fields.text_area import TextArea
                     text_area = TextArea(self, c)
                     text_area.draw(field_name, label)
                 elif field_type == 'radio':
+                    from fields.radio_button import RadioButton
                     radio_button = RadioButton(self, c)
                     radio_button.draw(field_name, label, options)
                 elif field_type == 'checkbox':
+                    from fields.check_box import CheckBox
                     check_box = CheckBox(self, c)
                     check_box.draw(field_name, label, options)
                 else:
                     # Fallback for unknown field types
+                    from fields.text_field import TextField
                     text_field = TextField(self, c)
                     text_field.draw(field_name, label)
             except Exception as e:
                 print(f"Error drawing field '{field_name}' of type '{field_type}': {e}")
                 # Fallback to text field
+                from fields.text_field import TextField
                 text_field = TextField(self, c)
                 text_field.draw(field_name, f"{label} (Error: treated as text)")
                     
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
+        
+    def _handle_group_page_break(self, c):
+        """Handle page breaks when in a group - preserve group state"""
+        if self.current_group is not None:
+            # Store current group info
+            temp_group = self.current_group
+            temp_config = {
+                'columns': self.group_columns,
+                'widths': [w / (self.field_width - self.group_spacing * (self.group_columns - 1)) 
+                        for w in self.column_widths] if self.column_widths else [0.5, 0.5],
+                'spacing': self.group_spacing
+            }
+            
+            # End current group
+            from fields.group_field import GroupField
+            group_field = GroupField(self, c)
+            group_field.end_group()
+            
+            # Start new page
+            self.current_page += 1
+            self.page_manager.initialize_page(c)
+            
+            # Restart the group on new page
+            group_field.start_group(temp_group)
+        else:
+            # Normal page break
+            self.current_page += 1
+            self.page_manager.initialize_page(c)
 
     # In your ModernPDFFormGenerator class, update the _process_fields method:
 

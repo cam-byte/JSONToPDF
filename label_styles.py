@@ -85,4 +85,12 @@ LABEL_STYLES = {
         alignment='left',
         color=colors.black
     ),
+    'checkbox': LabelStyle(
+        font_name='Helvetica',  # Standard font
+        font_size=9,
+        color=colors.black,
+        spacing_before=2,
+        spacing_after=2,
+        alignment='left'
+    ),
 }

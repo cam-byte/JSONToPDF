@@ -1,4 +1,4 @@
-# fields/group_field.py - ENHANCED WITH SMART GROUP OVERRIDE LOGIC
+# fields/group_field.py - SIMPLIFIED AND FIXED
 
 class GroupField:
     def __init__(self, generator, canvas):
@@ -8,113 +8,52 @@ class GroupField:
         self.field_width = generator.field_width
         self.colors = generator.colors
         
-        # Define group hierarchy
-        self.container_groups = {
-            'form_container',
-            'form_content_container', 
-            'primary_insurance',
-            'secondary_insurance',
-            'permanent',
-            'deciduous',
-            'top_row',
-            'bottom_row',
-            'tooth_container',
-            'indent_x1',
-            'substance_details',
-            'pharmacy_information'
+        # Simplified group types - only track functional layout groups
+        self.layout_groups = {
+            'two_columns': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 20},
+            'four_columns': {'columns': 4, 'widths': [0.22, 0.22, 0.22, 0.22], 'spacing': 15},
+            'name_details': {'columns': 2, 'widths': [0.6, 0.4], 'spacing': 15},
+            'address_details': {'columns': 3, 'widths': [0.4, 0.3, 0.3], 'spacing': 12},
+            'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 15},
+            'phone_details': {'columns': 3, 'widths': [0.33, 0.33, 0.33], 'spacing': 10},
         }
         
-        self.functional_groups = {
-            'name_details',
-            'address_details', 
-            'patient_contact',
-            'phone_details',
-            'two_columns',
-            'four_columns',
-            'women_only',
-            'tooth',
-            'contact_information'
+        # Container groups that we ignore for layout purposes
+        self.container_groups = {
+            'form_container', 'form_content_container', 'primary_insurance', 
+            'secondary_insurance', 'permanent', 'deciduous', 'top_row', 
+            'bottom_row', 'tooth_container', 'indent_x1', 'substance_details', 
+            'pharmacy_information'
         }
 
     def start_group(self, group_name):
-        """Start a group with smart nesting logic"""
-        clean_group_name = group_name.lstrip('*')  # Remove any prefix markers
+        """Simplified group start - only handle layout groups"""
+        clean_group_name = group_name.lstrip('*')
         
-        # Determine group types
-        is_container = clean_group_name in self.container_groups
-        is_functional = clean_group_name in self.functional_groups
-        
-        
-        # Smart nesting logic
+        # If this is a container group, ignore it
+        if clean_group_name in self.container_groups:
+            return
+            
+        # If we're already in a layout group, end it first
         if self.generator.current_group is not None:
-            current_is_container = self.generator.current_group in self.container_groups
-            current_is_functional = self.generator.current_group in self.functional_groups
-            
-            
-            # Rule 1: Functional groups can override container groups
-            if is_functional and current_is_container:
-                self._end_current_group_silently()
-            
-            # Rule 2: Prevent functional group nesting
-            elif is_functional and current_is_functional:
-                return
-            
-            # Rule 3: Container groups are ignored when already in functional groups
-            elif is_container and current_is_functional:
-                return
-            
-            # Rule 4: Container groups can nest within other container groups
-            elif is_container and current_is_container:
-                # Allow container nesting, but don't actually change active group
-                return
-            
-            # Rule 5: Unknown groups default to blocking
-            else:
-                return
+            self.end_group()
         
-        # Start the new group
-        self._initialize_group(clean_group_name)
-        
-    def _end_current_group_silently(self):
-        """End current group without drawing/alignment (used for overrides)"""
-        self.generator.current_group = None
-        self.generator.group_fields = []
-        self.generator.column_widths = None
-        self.generator.group_spacing = None
-        self.generator.group_columns = None
-        self.generator.group_start_y = None
+        # Only start if this is a recognized layout group
+        if clean_group_name in self.layout_groups:
+            self._initialize_group(clean_group_name)
         
     def _initialize_group(self, group_name):
-        """Initialize a new group with proper configuration"""
+        """Initialize a layout group with proper configuration"""
         self.generator.current_group = group_name
         self.generator.group_fields = []
         self.generator.group_start_y = self.generator.current_y
         
-        
-        # Get group configuration
-        config = self.generator.group_configs.get(group_name, {
-            'columns': 2,
-            'widths': [0.5, 0.5],
-            'spacing': 15
-        })
-        
+        config = self.layout_groups[group_name]
         columns = config['columns']
         widths = config['widths']
         spacing = config['spacing']
         
-        
-        # Ensure we have the right number of widths
-        if len(widths) != columns:
-            widths = [1.0 / columns] * columns
-        
-        # Normalize widths to proportions
-        total = sum(widths)
-        if total == 0:
-            widths = [1.0 / columns] * columns
-        else:
-            widths = [w / total for w in widths]
-        
-        # Calculate actual pixel widths with proper spacing
+        # Calculate actual pixel widths
         total_spacing = spacing * (columns - 1) if columns > 1 else 0
         available_width = self.field_width - total_spacing
         
@@ -125,94 +64,64 @@ class GroupField:
         self.generator.group_columns = columns
 
     def end_group(self):
-        """End the current group with proper cleanup and alignment"""
-        # If no current group, nothing to do
+        """End the current group and align fields properly"""
         if self.generator.current_group is None:
             return
         
-        group_name = self.generator.current_group
+        # Calculate the final Y position based on all fields in the group
+        if self.generator.group_fields:
+            # Find the lowest Y position among all fields
+            min_y = min(field.get('y', self.generator.current_y) for field in self.generator.group_fields)
+            # Add some spacing after the group
+            self.generator.current_y = min_y - 15
         
-        # Only align if we have functional group fields that need positioning
-        is_functional = group_name in self.functional_groups
-        if is_functional and self.generator.group_fields:
-            self._align_group_rows()
-        
-        # Reset group variables
+        # Reset group state
         self.generator.current_group = None
         self.generator.group_fields = []
         self.generator.column_widths = None
         self.generator.group_spacing = None
         self.generator.group_columns = None
         self.generator.group_start_y = None
-        
 
-    def _align_group_rows(self):
-        """Align fields in rows properly, accounting for text wrapping"""
-        if not self.generator.group_fields:
-            return
+    def get_field_position_in_group(self):
+        """Get the position for the next field in the current group"""
+        if self.generator.current_group is None:
+            return self.margin_x, self.field_width, self.generator.current_y
         
+        group_index = len(self.generator.group_fields)
+        column_index = group_index % self.generator.group_columns
+        row_index = group_index // self.generator.group_columns
         
-        columns = self.generator.group_columns
-        rows = {}
-        
-        # Group fields by row
-        for i, field in enumerate(self.generator.group_fields):
-            row_index = i // columns
-            if row_index not in rows:
-                rows[row_index] = []
-            rows[row_index].append(field)
-        
-        
-        # Process each row to find the lowest Y position
-        final_y = self.generator.group_start_y
-        
-        for row_index, row_fields in rows.items():
-            if row_fields:
-                # Find the lowest Y position in this row
-                row_min_y = min(f.get('y', self.generator.group_start_y) for f in row_fields)
-                final_y = min(final_y, row_min_y)
-        
-        group_name = self.generator.current_group
-        
-        # Calculate appropriate spacing based on group content
-        if group_name == 'women_only':
-            # Women Only group needs extra spacing due to radio buttons and text
-            additional_spacing = 30
-        elif any(field.get('name', '').startswith('radio') or 'radio' in str(field) for field in self.generator.group_fields):
-            # Groups with radio buttons need more spacing
-            additional_spacing = 20
-        else:
-            # Default spacing for other groups
-            additional_spacing = 15
-        
-        final_position = final_y - additional_spacing
-        self.generator.current_y = final_position
-
-    def get_column_info(self, column_index):
-        """Get positioning info for a specific column"""
-        if (self.generator.current_group is None or
-            not hasattr(self.generator, 'column_widths') or
-            column_index >= len(self.generator.column_widths)):
-            return self.margin_x, self.field_width
-        
+        # Calculate X position
         field_x = self.margin_x
         if column_index > 0:
             field_x += sum(self.generator.column_widths[:column_index])
             field_x += self.generator.group_spacing * column_index
         
         field_width = self.generator.column_widths[column_index]
-        return field_x, field_width
-
-    def is_functional_group(self, group_name=None):
-        """Check if a group is functional (controls layout)"""
-        target_group = group_name or self.generator.current_group
-        if target_group is None:
-            return False
-        return target_group.lstrip('*') in self.functional_groups
         
-    def is_container_group(self, group_name=None):
-        """Check if a group is a container (organizational only)"""
-        target_group = group_name or self.generator.current_group
-        if target_group is None:
-            return False
-        return target_group.lstrip('*') in self.container_groups
+        # Calculate Y position - use row-based positioning
+        field_y = self.generator.group_start_y
+        if row_index > 0:
+            # For subsequent rows, look at the previous row's minimum Y
+            prev_row_start = (row_index - 1) * self.generator.group_columns
+            prev_row_end = min(prev_row_start + self.generator.group_columns, len(self.generator.group_fields))
+            if prev_row_end > prev_row_start:
+                prev_row_fields = self.generator.group_fields[prev_row_start:prev_row_end]
+                prev_row_min_y = min(f.get('y', field_y) for f in prev_row_fields)
+                field_y = prev_row_min_y - 35  # Row spacing
+        
+        return field_x, field_width, field_y
+
+    def add_field_to_group(self, field_name, final_y, start_y=None, field_x=None, field_width=None):
+        """Add a field to the current group tracking"""
+        if self.generator.current_group is None:
+            return
+            
+        self.generator.group_fields.append({
+            'name': field_name,
+            'y': final_y,
+            'start_y': start_y or final_y,
+            'x': field_x or self.margin_x,
+            'width': field_width or self.field_width
+        })

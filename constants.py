@@ -30,10 +30,10 @@ for path in logo_candidates:
 
 BUSINESS_INFO = {
     'logo_path': logo_path,
-    'business_name': 'Paul B. Langer, D.D.S. LLC',
-    'address': '522 East Broad Street Westfield, N.J. 07090',
-    'phone': '(908) 654-3636',
-    'email': 'N.J. Specialty Permit #3857'
+    'business_name': 'Dr. Effie Deegan',
+    'address': '23 Old Short Hills Rd, West Orange, NJ 07052',
+    'phone': '(973) 736-4432',
+    'email': 'frontdesk@deegandental.com'
 }
 
 COLORS = {

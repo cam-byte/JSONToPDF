@@ -1,6 +1,10 @@
-# fields/check_box.py - FIXED WITH PAGE BREAK HANDLING
+# fields/check_box.py
+# FIXED: robust option parsing -> (key, label)
+# FIXED: field names = f"{field_name}_{key}"
+# FIXED: tries to set export value to the full name (fallback-safe)
 
-from utils import _get_options, _strip_html_tags, wrap_text, create_acrobat_compatible_field, _check_page_break
+from utils import _strip_html_tags, wrap_text, create_acrobat_compatible_field, _check_page_break
+
 
 class CheckBox:
     def __init__(self, generator, canvas):
@@ -17,17 +21,19 @@ class CheckBox:
         current_color = c._fillColorObj
 
         self.current_options = options
+        print(f"[CheckBox] draw() field='{field_name}' label='{label}' options(raw)={options}")
 
-        # DYNAMIC SPACING: Calculate spacing based on context
+        # Dynamic spacing
         spacing = self._calculate_dynamic_spacing(field_name, label, options)
         self.generator.current_y -= spacing
 
-        # Calculate field positioning
+        # Positioning
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
 
-        # Get checkbox options
-        options_list = _get_options(options)
+        # Parse options as (key, label)
+        options_list = self._options_as_key_label(options)
+        print(f"[CheckBox] options_list(normalized)={options_list}")
 
         if len(options_list) == 1:
             self._draw_single_checkbox(c, field_name, label, options_list, field_x, field_width, field_y, starting_y)
@@ -37,71 +43,175 @@ class CheckBox:
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
 
+    # ---------- option normalization ----------
+
+    def _options_as_key_label(self, options):
+        """
+        Return list[(key, label)].
+        Supports:
+          - {"option": {"key": "Label", ...}}
+          - {"options": {"key": "Label", ...}}
+          - {"key": "Label", ...}
+          - [("key","Label"), ...]
+          - [{"value":"key","label":"Label"}, ...]
+          - ["Label1","Label2", ...] -> [("label1","Label1"), ...]
+          - anything else -> [(normalized(str), str)]
+        """
+        # Case: full field spec with nested dict under "option" or "options"
+        if isinstance(options, dict):
+            nested = None
+            if "option" in options and isinstance(options["option"], dict):
+                nested = options["option"]
+            elif "options" in options and isinstance(options["options"], dict):
+                nested = options["options"]
+
+            if nested is not None:
+                return [(str(k), str(v)) for k, v in nested.items()]
+
+            # Plain mapping of key->label
+            if all(isinstance(k, (str, int)) for k in options.keys()):
+                # Avoid treating field-spec dicts (with keys like name/type/label) as options
+                # Heuristic: if most values are strings and keys look like identifiers, treat as options.
+                keys = list(options.keys())
+                # If it looks like a field spec, don't flatten it by accident
+                if not {"name", "label", "email_label", "type"} & set(keys):
+                    return [(str(k), str(v)) for k, v in options.items()]
+
+        # List/tuple style
+        if isinstance(options, (list, tuple)):
+            out = []
+            for item in options:
+                if isinstance(item, tuple) and len(item) == 2:
+                    k, v = item
+                    out.append((str(k), str(v)))
+                elif isinstance(item, dict):
+                    # common schema: {"value":"key","label":"Label"}
+                    if "value" in item and "label" in item:
+                        out.append((str(item["value"]), str(item["label"])))
+                    else:
+                        # single-key dict like {"key":"Label"}
+                        for k, v in item.items():
+                            out.append((str(k), str(v)))
+                else:
+                    s = str(item)
+                    out.append((self._normalize_field_value(s), s))
+            return out
+
+        # Fallback: single string or anything else
+        s = str(options)
+        return [(self._normalize_field_value(s), s)]
+
+    # ---------- helpers ----------
+
+    def _normalize_field_value(self, value):
+        """Normalize to lowercase_with_underscores and strip non-alnum."""
+        if value is None:
+            return ""
+        import re
+        normalized = str(value).lower().replace(" ", "_")
+        normalized = re.sub(r'[^a-z0-9_]', '_', normalized)
+        normalized = re.sub(r'_+', '_', normalized)
+        return normalized.strip('_')
+
     def _calculate_dynamic_spacing(self, field_name, label, options):
-        """Calculate appropriate spacing based on checkbox context"""
-        base_spacing = 5  # Minimum spacing
-        
-        # Get the checkbox text to analyze
+        base_spacing = 5
         checkbox_text = self._get_checkbox_text(label, options)
-        
-        # Factor 1: Text length - longer text needs more spacing
         if len(checkbox_text) > 200:
-            text_spacing = 10  # Very long text (like acknowledgements)
+            text_spacing = 10
         elif len(checkbox_text) > 100:
-            text_spacing = 5  # Medium long text
+            text_spacing = 5
         else:
-            text_spacing = 0  # Short text
-        
-        # Combine all factors, but cap at reasonable maximum
-        total_spacing = base_spacing + text_spacing
-        return min(total_spacing, 60)  # Cap at 60 points max
+            text_spacing = 0
+        return min(base_spacing + text_spacing, 60)
 
     def _get_checkbox_text(self, label, options):
-        """Extract the actual text that will be displayed with the checkbox"""
         checkbox_text = label or ""
-        
         if not checkbox_text or not checkbox_text.strip():
             if options and isinstance(options, dict):
                 if 'checked' in options:
                     checkbox_text = options['checked']
                 elif len(options) == 1:
                     checkbox_text = list(options.values())[0]
-        
         return _strip_html_tags(checkbox_text or "")
 
+    def _create_checkbox_field(self, c, *, name, tooltip, x, y, size, checked=False, fieldFlags=0):
+        """
+        Wrap create_acrobat_compatible_field with a best-effort attempt to set an export value.
+        Some wrappers accept export_value= or value=. If not, we fall back cleanly.
+        """
+        # Prefer export value as the full field name so submissions carry the full identifier
+        export_val = name
+        try:
+            create_acrobat_compatible_field(
+                c, 'checkbox',
+                name=name,
+                tooltip=tooltip,
+                x=x, y=y, size=size,
+                checked=checked,
+                fieldFlags=fieldFlags,
+                export_value=export_val  # try canonical kw
+            )
+            return
+        except TypeError:
+            pass
+
+        try:
+            create_acrobat_compatible_field(
+                c, 'checkbox',
+                name=name,
+                tooltip=tooltip,
+                x=x, y=y, size=size,
+                checked=checked,
+                fieldFlags=fieldFlags,
+                value=export_val  # alternate kw some wrappers use
+            )
+            return
+        except TypeError:
+            pass
+
+        # Final fallback: no explicit export/value support
+        create_acrobat_compatible_field(
+            c, 'checkbox',
+            name=name,
+            tooltip=tooltip,
+            x=x, y=y, size=size,
+            checked=checked,
+            fieldFlags=fieldFlags
+        )
+
+    # ---------- drawing ----------
+
     def _draw_single_checkbox(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
-        # Get the single option from options_list (same as multi checkbox)
-        value, option_label = options_list[0]  # Get the first (and only) option
-        checkbox_text = _strip_html_tags(option_label)  # Use the option label, not the field label
+        value_key, option_label = options_list[0]
+        checkbox_text = _strip_html_tags(option_label)
 
         style = self.generator.label_manager.get_label_style('checkbox', checkbox_text)
         font_name = style.font_name
         font_size = style.font_size
         color = style.color
 
-        # Checkbox settings
         checkbox_size = 12
         checkbox_y_top = self.generator.current_y
         checkbox_y = checkbox_y_top - checkbox_size + 7
 
-        # Calculate text dimensions and check for page breaks
         text_x = field_x + checkbox_size + 6
         max_width = self.generator.page_width - text_x - self.generator.margin_x
 
         lines, total_text_height = wrap_text(c, checkbox_text, max_width, font_name, font_size)
         needed_height = max(checkbox_size, total_text_height) + 20
 
-        # Page break check
         if checkbox_y - needed_height < self.generator.margin_bottom:
             if _check_page_break(self.generator, c, needed_height + 20):
                 self.generator.page_manager.initialize_page(c)
                 checkbox_y_top = self.generator.current_y
                 checkbox_y = checkbox_y_top - checkbox_size + 2
 
-        # Draw checkbox using the value from options_list
-        checkbox_name = f"{field_name}_{value}"  # Use the actual value from options_list
-        create_acrobat_compatible_field(c, 'checkbox',
-            name=checkbox_name,  # Now uses the proper value-based name
+        normalized_value = self._normalize_field_value(value_key)
+        checkbox_name = f"{field_name}_{normalized_value}"
+
+        self._create_checkbox_field(
+            c,
+            name=checkbox_name,
             tooltip=checkbox_text[:50] + "..." if len(checkbox_text) > 50 else checkbox_text,
             x=field_x,
             y=checkbox_y,
@@ -110,16 +220,13 @@ class CheckBox:
             fieldFlags=0
         )
 
-        # Draw text
         c.setFont(font_name, font_size)
         c.setFillColor(color)
-        
         text_y = checkbox_y_top - 2
         for line in lines:
             c.drawString(text_x, text_y, line)
             text_y -= font_size + 4
 
-        # Calculate final position with dynamic spacing after
         after_spacing = 15 if len(checkbox_text) > 100 else 8
         final_y = text_y - after_spacing
         self.generator.current_y = final_y
@@ -128,61 +235,43 @@ class CheckBox:
             self.generator.group_fields.append({'y': final_y, 'name': field_name})
 
     def _calculate_optimal_spacing(self, options_list):
-        """Calculate optimal spacing to fit all checkboxes with proper gaps"""
         from reportlab.pdfbase.pdfmetrics import stringWidth
-        
-        # Minimum gap between checkboxes
         min_gap = 15
         checkbox_size = 12
-        padding = 6  # Space between checkbox and text
-        
-        # Find the longest label
+        padding = 6
+
         max_label_width = 0
-        for value, option_label in options_list:
+        for _, option_label in options_list:
             clean_label = _strip_html_tags(option_label)
             label_width = stringWidth(clean_label, "Helvetica", 9)
             max_label_width = max(max_label_width, label_width)
-        
-        # Calculate total width needed for one checkbox item
-        # checkbox + padding + text + gap
+
         item_width = checkbox_size + padding + max_label_width + min_gap
-        
-        # See how many fit in a row with this spacing
         available_width = self.field_width
         items_per_row = max(1, int(available_width / item_width))
-        
-        # If we can fit all items in one row, use the calculated spacing
+
         if len(options_list) <= items_per_row:
             return item_width
-        
-        # If not, distribute available width evenly
+
         actual_spacing = available_width / items_per_row
-        
-        # But don't make spacing smaller than minimum viable
-        min_viable = checkbox_size + padding + 30 + min_gap  # 30px for reasonable text
+        min_viable = checkbox_size + padding + 30 + min_gap
         return max(actual_spacing, min_viable)
 
     def _draw_multiple_checkboxes(self, c, field_name, label, options_list, field_x, field_width, field_y, starting_y):
-        """Draw multiple checkboxes with smart page break handling that minimizes page usage"""
-        
-        # Draw main label if present
         if label and label.strip():
             style = self.generator.label_manager.get_label_style('checkbox', label)
             self.generator.label_manager.draw_label(c, label, style, spacing_before=0, tight=True)
 
-        label_to_checkbox_gap = -12  # ADJUST THIS VALUE - increase for more gap, decrease for less
+        label_to_checkbox_gap = -12
         self.generator.current_y -= label_to_checkbox_gap
-        
-        # Use generator's current_y directly instead of local variable
+
         c.setFont("Helvetica", 9)
         c.setFillColor(self.colors['primary'])
 
-        # Layout settings
         checkbox_size = 12
         padding = 6
         row_height = checkbox_size + 8
 
-        # Calculate optimal spacing and layout
         optimal_item_width = self._calculate_optimal_spacing(options_list)
         available_width = field_width
         start_x = field_x
@@ -191,35 +280,30 @@ class CheckBox:
 
         items_in_current_row = 0
 
-        for i, (value, option_label) in enumerate(options_list):
+        for i, (value_key, option_label) in enumerate(options_list):
             clean_option_label = _strip_html_tags(option_label)
-            
-            # Check if we need to wrap to next line FIRST
+
             if items_in_current_row >= items_per_row:
-                # Move to next row
                 current_x = start_x
-                self.generator.current_y -= row_height  # Update generator's current_y
+                self.generator.current_y -= row_height
                 items_in_current_row = 0
 
-            # NOW check if this checkbox position would go off the page
             checkbox_y_position = self.generator.current_y - checkbox_size + 2
-            
+
             if checkbox_y_position < self.generator.margin_bottom:
-                # This checkbox would overflow - move to new page
                 if _check_page_break(self.generator, c, checkbox_size + 20):
                     self.generator.page_manager.initialize_page(c)
-                    # generator.current_y is now updated by page_manager.initialize_page()
                     current_x = start_x
                     items_in_current_row = 0
-                    # Reset font and color after page break
                     c.setFont("Helvetica", 9)
                     c.setFillColor(self.colors['primary'])
 
-            # Draw checkbox at the current position
-            checkbox_name = f"{field_name}_{value}"
+            normalized_value = self._normalize_field_value(value_key)
+            checkbox_name = f"{field_name}_{normalized_value}"
             final_checkbox_y = self.generator.current_y - checkbox_size + 2
-            
-            create_acrobat_compatible_field(c, 'checkbox',
+
+            self._create_checkbox_field(
+                c,
                 name=checkbox_name,
                 tooltip=f"{field_name} - {clean_option_label}",
                 x=current_x,
@@ -229,12 +313,10 @@ class CheckBox:
                 fieldFlags=0
             )
 
-            # Draw label
             label_x = current_x + checkbox_size + padding
             label_y = self.generator.current_y - 7
             c.drawString(label_x, label_y, clean_option_label)
-            
-            # Move to next position in row
+
             current_x += optimal_item_width
             items_in_current_row += 1
 
@@ -245,8 +327,9 @@ class CheckBox:
         else:
             self.generator.current_y = final_field_y - 5
 
+    # ---------- layout helpers ----------
+
     def _get_field_position(self):
-        """Calculate position for field within group or regular flow"""
         field_x = self.margin_x
         field_width = self.field_width
         field_y = self.generator.current_y
@@ -272,7 +355,6 @@ class CheckBox:
         return field_x, field_width, field_y
 
     def _handle_group_positioning(self, field_x, field_width, final_y, start_y):
-        """Handle positioning when field is in a group"""
         self.generator.group_fields.append({
             'name': 'checkbox',
             'x': field_x,
