@@ -1,969 +1,151 @@
 {
-    "custom_patient_intake": {
-        "settings": {},
-        "content": {
-            "custom_patient_intake": {
-                "form_name": "custom_patient_intake",
-                "submission_url": "{{%/processors/forms/pdf_form_email}}",
-                "subject": "Form Submission: Patient Intake Form",
-                "confirmation": "/custom/content/thank_you/thank_you.html",
-                "pdf": "/custom/pdfs/custom_patient_intake.pdf",
-                "category": "Patient Intake Form",
-                "fields": [
-                    {
-                        "name": "pdf_download",
-                        "label": "<i class=\"fad fa-file-download\"></i>Download Printable Version",
-                        "type": "pdf_download"
-                    },
-                    {
-                        "name": "form_container",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "form_header",
-                        "label": "<h1>Patient Intake Form</h1>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "form_content_container",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "date",
-                        "label": "Date",
-                        "email_label": "Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Patient Information</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "*name_details",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "last_name",
-                        "label": "Last Name",
-                        "email_label": "Last Name",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "first_name",
-                        "label": "First Name",
-                        "email_label": "First Name",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "middle_initial",
-                        "label": "Initial",
-                        "email_label": "Middle Initial",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "*address_details",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "mailing_address",
-                        "label": "Address",
-                        "email_label": "Mailing Address",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "city",
-                        "label": "City",
-                        "email_label": "City",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "state",
-                        "label": "State",
-                        "email_label": "State",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "zip",
-                        "label": "Zip",
-                        "email_label": "Zip",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "social_security",
-                        "label": "Soc. Sec. #",
-                        "email_label": "Social Security Number",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "home_phone",
-                        "label": "Home Ph.",
-                        "email_label": "Home Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "sex",
-                        "label": "Sex",
-                        "email_label": "Sex",
-                        "type": "radio",
-                        "option": {
-                            "male": "M",
-                            "female": "F"
-                        }
-                    },
-                    {
-                        "name": "age",
-                        "label": "Age",
-                        "email_label": "Age",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "birthdate",
-                        "label": "Birthdate",
-                        "email_label": "Date of Birth",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "name": "marital_status",
-                        "label": "Marital Status",
-                        "email_label": "Marital Status",
-                        "type": "checkbox",
-                        "option": [
-                            "Single",
-                            "Married",
-                            "Widowed",
-                            "Separated",
-                            "Divorced",
-                            "Domestic Partner"
-                        ]
-                    },
-                    {
-                        "name": "employer",
-                        "label": "Patient Employed by",
-                        "email_label": "Employer",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "occupation",
-                        "label": "Occupation",
-                        "email_label": "Occupation",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "patient_contact",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "email_address",
-                        "label": "Email",
-                        "email_label": "Email Address",
-                        "type": "email",
-                        "required": false
-                    },
-                    {
-                        "name": "business_phone",
-                        "label": "Business Phone",
-                        "email_label": "Business Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "cell_phone",
-                        "label": "Cell Phone",
-                        "email_label": "Cell Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "referral_source",
-                        "label": "Whom may we thank for referring you?",
-                        "email_label": "Referral Source",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "emergency_contact",
-                        "label": "In case of emergency who should be notified?",
-                        "email_label": "Emergency Contact Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "emergency_phone",
-                        "label": "Phone",
-                        "email_label": "Emergency Contact Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Primary Insurance</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "primary_insurance",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "*name_details",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "responsible_party_last_name",
-                        "label": "Person Responsible for Account - Last Name",
-                        "email_label": "Responsible Party Last Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_first_name",
-                        "label": "First Name",
-                        "email_label": "Responsible Party First Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_initial",
-                        "label": "Initial",
-                        "email_label": "Responsible Party Initial",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "relation_to_patient",
-                        "label": "Relation to Patient",
-                        "email_label": "Relation to Patient",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_birthdate",
-                        "label": "Birthdate",
-                        "email_label": "Responsible Party Birthdate",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_social_security",
-                        "label": "Soc. Sec. #",
-                        "email_label": "Responsible Party Social Security",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "*address_details",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "responsible_party_address",
-                        "label": "Address (if different from patient's)",
-                        "email_label": "Responsible Party Address",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_city",
-                        "label": "City",
-                        "email_label": "Responsible Party City",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_state",
-                        "label": "State",
-                        "email_label": "Responsible Party State",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_zip",
-                        "label": "Zip",
-                        "email_label": "Responsible Party Zip",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "responsible_party_phone",
-                        "label": "Phone",
-                        "email_label": "Responsible Party Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_employer",
-                        "label": "Person Responsible Employed by",
-                        "email_label": "Responsible Party Employer",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_occupation",
-                        "label": "Occupation",
-                        "email_label": "Responsible Party Occupation",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_business_address",
-                        "label": "Bus. Address",
-                        "email_label": "Responsible Party Business Address",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_business_phone",
-                        "label": "Bus. Ph.",
-                        "email_label": "Responsible Party Business Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "responsible_party_cell_phone",
-                        "label": "Cell. Ph.",
-                        "email_label": "Responsible Party Cell Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "insurance_company",
-                        "label": "Insurance Company",
-                        "email_label": "Primary Insurance Company",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "subscriber_id",
-                        "label": "Subscriber ID#",
-                        "email_label": "Primary Subscriber ID",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "group_number",
-                        "label": "Group #",
-                        "email_label": "Primary Group Number",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Secondary Insurance</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "secondary_insurance",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "has_additional_insurance",
-                        "label": "Is patient covered by additional insurance?",
-                        "email_label": "Has Additional Insurance",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "secondary_insured_name",
-                        "label": "Name of Insured",
-                        "email_label": "Secondary Insured Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_relation_to_patient",
-                        "label": "Relation to Patient",
-                        "email_label": "Secondary Relation to Patient",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_birthdate",
-                        "label": "Birthdate",
-                        "email_label": "Secondary Insured Birthdate",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "name": "*address_details",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "secondary_insured_address",
-                        "label": "Address (if different from patient's)",
-                        "email_label": "Secondary Insured Address",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_city",
-                        "label": "City",
-                        "email_label": "Secondary Insured City",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_state",
-                        "label": "State",
-                        "email_label": "Secondary Insured State",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_zip",
-                        "label": "Zip",
-                        "email_label": "Secondary Insured Zip",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "secondary_insured_phone",
-                        "label": "Phone",
-                        "email_label": "Secondary Insured Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_employer",
-                        "label": "Employer",
-                        "email_label": "Secondary Insured Employer",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insured_business_phone",
-                        "label": "Bus. Ph.",
-                        "email_label": "Secondary Insured Business Phone",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_insurance_company",
-                        "label": "Insurance Company",
-                        "email_label": "Secondary Insurance Company",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_subscriber_id",
-                        "label": "SS# or Subscriber ID#",
-                        "email_label": "Secondary Subscriber ID",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "secondary_group_number",
-                        "label": "Group #",
-                        "email_label": "Secondary Group Number",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Method of Payment</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "payment_method",
-                        "label": "Which of the following methods of payment will you be using? (Fees must be paid in full at the completion of treatment.)",
-                        "email_label": "Payment Method",
-                        "type": "checkbox",
-                        "option": [
-                            "Cash",
-                            "Check",
-                            "VISA",
-                            "MC",
-                            "Discover",
-                            "Care Credit"
-                        ]
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>All information written is true and complete.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "patient_signature_1",
-                        "label": "Signature",
-                        "email_label": "Patient Signature",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "signature_date_1",
-                        "label": "Date",
-                        "email_label": "Signature Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>If dental insurance applies: Although this office files insurance claims as a service to the patient, the insurance contract is between the patient and the insurance company. As we have no control over the insurance company's method of payment or amount of payment, any difference of payment is entirely the responsibility of the patient.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "patient_initials",
-                        "label": "Initials",
-                        "email_label": "Initials",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>HIPAA Acknowledgement of Receipt of Notice of Privacy Practices</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "hipaa_print_name",
-                        "label": "Please Print Name",
-                        "email_label": "HIPAA Print Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "hipaa_signature",
-                        "label": "Signature",
-                        "email_label": "HIPAA Signature",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "hipaa_date",
-                        "label": "Date",
-                        "email_label": "HIPAA Date",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "name": "patient_refused_hipaa",
-                        "label": "<h4><span>You may refuse to sign this acknowledgement</span></h4>",
-                        "email_label": "Patient Refused HIPAA",
-                        "type": "checkbox",
-                        "option": {
-                            "refused": "Patient refused to sign HIPAA"
-                        }
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>MEDICAL HISTORY</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>Please complete the following questions so that we may thoroughly diagnose your condition. The information you provide is for our records and will be considered strictly confidential. In addition, it is your responsibility to update this medical history when any changes occur.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "two_columns",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "health_change",
-                        "label": "Has there been any change in your general health within the past year?",
-                        "email_label": "Health Change Past Year",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "physician_care",
-                        "label": "Are you under the care of a physician for a current problem?",
-                        "email_label": "Under Physician Care",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "hospitalized",
-                        "label": "Have you been hospitalized within the past five years?",
-                        "email_label": "Hospitalized Past 5 Years",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "taking_medications",
-                        "label": "Are you currently taking any medications or drugs?",
-                        "email_label": "Currently Taking Medications",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "last_physical_exam",
-                        "label": "Date of last physical exam",
-                        "email_label": "Last Physical Exam Date",
-                        "type": "date",
-                        "required": false
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "two_columns",
-                        "type": "group_start"
-                    },
-                    {
-                        "name": "alcohol_drug_therapy",
-                        "label": "Have you received therapy for alcoholism or drug addiction during the past five years?",
-                        "email_label": "Alcohol/Drug Therapy",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "allergic_reactions",
-                        "label": "Have you ever had any ALLERGIC OR ADVERSE REACTIONS to LATEX, anesthetics, antibiotics, or other medications?",
-                        "email_label": "Allergic Reactions",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "abnormal_bleeding",
-                        "label": "Have you ever had abnormal bleeding with previous extractions, surgery, or trauma?",
-                        "email_label": "Abnormal Bleeding",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "blood_transfusion",
-                        "label": "Have you ever required a blood transfusion?",
-                        "email_label": "Blood Transfusion",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "surgery_radiation",
-                        "label": "Have you ever had surgery and/or radiation for a tumor, growth or other condition?",
-                        "email_label": "Surgery/Radiation",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "name": "medical_conditions",
-                        "label": "Do you have or have you had any of the following:",
-                        "email_label": "Medical Conditions",
-                        "type": "checkbox",
-                        "option": {
-                          "high_blood_pressure": "High blood pressure",
-                          "tobacco_use": "Tobacco use",
-                          "heart_murmur": "Heart murmur of prolapsed valve (MVP)",
-                          "sinus_trouble": "Sinus trouble",
-                          "joint_prosthesis": "Joint prosthesis (hip, knee, etc.)",
-                          "thyroid_problems": "Thyroid problems",
-                          "rheumatic_fever": "Rheumatic fever or rheumatic heart disease",
-                          "diabetes": "Diabetes",
-                          "congenital_heart_disease": "Congenital heart disease",
-                          "stomach_ulcers": "Stomach ulcers, colitis",
-                          "pacemaker_implant": "Pacemaker or Cochlear implant",
-                          "hepatitis_jaundice": "Hepatitis, jaundice, liver disease",
-                          "cardiovascular_disease": "Cardiovascular disease: heart attack, stroke, by-pass",
-                          "kidney_problems": "Kidney problems",
-                          "blood_thinners": "Taking blood thinners",
-                          "psychiatric_treatment": "Psychiatric treatment",
-                          "prosthetic_heart_valve": "Prosthetic heart valve",
-                          "fainting_spells": "Fainting spells or seizures",
-                          "blood_disorder": "Blood disorder (e.g., anemia)",
-                          "epilepsy": "Epilepsy",
-                          "std": "STD",
-                          "cancer": "Cancer",
-                          "hiv_aids": "HIV / AIDS",
-                          "osteoporosis_medication": "Taking/taken osteoporosis medicines",
-                          "asthma": "Asthma",
-                          "delayed_healing": "Delay in healing",
-                          "tmj_problems": "Temporomandibular joint problems (TMJ)"
-                        },
-                        "required":false
-                    },
-                    {
-                        "name": "other_disease",
-                        "label": "Do you have any disease, condition, or problem not listed above?",
-                        "email_label": "Other Disease/Condition",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-                        "name": "other_disease_specified",
-                        "label": "Please specify the other disease, condition, or problem not listed",
-                        "email_label": "Please specify the other disease, condition, or problem not listed",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "premedication_required",
-                        "label": "Are you required to take premeds prior to dental treatment?",
-                        "email_label": "Premedication Required",
-                        "type": "radio",
-                        "option": {
-                            "yes": "Yes",
-                            "no": "No"
-                        }
-                    },
-                    {
-						"name": "women_only",
-						"type": "group_start"
-					},
-					{
-						"name": "",
-						"label": "<h4>Women Only <span>Are you:</span></h4>",
-						"type": "label"
-					},
-					{
-						"name": "pregnant",
-						"label": "Pregnant?",
-						"email_label": "Pregnant?",
-						"type": "radio",
-						"option": {
-							"yes": "Yes",
-							"no": "No"
-						}
-					},
-                    {
-						"name": "nursing",
-
-						"label": "Nursing?",
-						"email_label": "Nursing?",
-						"type": "radio",
-						"option": {
-							"yes": "Yes",
-							"no": "No"
-						}
-					},
-					{
-						"name": "birth_control",
-						"label": "Do you take birth control pills?",
-						"email_label": "Do you take birth control pills?",
-						"type": "radio",
-						"option": {
-							"yes": "Yes",
-							"no": "No"
-						}
-					},	
-                    {
-                        "name": "content",
-                        "label": "<p>If YES, be advised that if you take antibiotics, an alternate method of birth control must be used.</p>",
-                        "type": "label"
-                    },				
-					{
-						"type": "group_end"
-					},
-                    
-                    {
-                        "name": "content",
-                        "label": "<p>All of the above information is true to the best of my knowledge.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p><strong>PERMISSION FOR ROOT CANAL TREATMENT</strong> - I, the undersigned, consent to the performing of any dental procedure of the tooth which may be decided upon to be necessary or advisable in the opinion of the doctor. I also understand my other option is extraction. I also understand that only the root canal treatment is to be done at the office. The permanent (outside) restoration (filling, inlay, crown, etc.) will be completed by my regular dentist.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "medical_history_date",
-                        "label": "Date",
-                        "email_label": "Medical History Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "name": "patient_signature_2",
-                        "label": "Signature of Patient",
-                        "email_label": "Patient Medical History Signature",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>*All signatures must be by parent or guardian if patient is under the age of 18.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>TERMS OF RENDERING SERVICES AND GUARANTEE</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>I, the undersigned, for and in consideration of Dr. Paul B. Langer providing endodontic services (Including consultation, radiographic imaging and treatment) hereby agree as follows:</p>",
-                        "type": "label"
-                    },
-                    {
-						"name": "content",
-						"label": "<ol type=\"A\"><li>Estimated payments shall be made on the date of treatment.</li><li>Any bill not paid in full within 30 days of final treatment shall include a finance charge of 1 ½ percent per month on the unpaid balance.</li><li>In the event that my account is referred to collection, I agree to pay all the finance charges, collection cost, and attorney's fees equal to 33% of the unpaid balance.</li><li>I expressly waive Notice of Indebtedness, default, presentment, demand, protest and notice of protest on any and all forms of such indebtedness; and, I expressly consent to the Jurisdiction of New Jersey, Venue of Union County, and the laws of the State of New Jersey control.</li><li>I understand the payment being made on the date of treatment is only an estimated amount based on insurance information obtained on the date of treatment. Any balance carried over after insurance is processed is my sole responsibility.</li><li>I personally guarantee all payments.</li></ol>",
-						"type": "label"
-					  },					  
-                    {
-                        "name": "patient_guarantor_signature",
-                        "label": "Signature of Patient or (Guarantor)",
-                        "email_label": "Patient/Guarantor Signature",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "terms_date",
-                        "label": "Date",
-                        "email_label": "Terms Agreement Date",
-                        "type": "date",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Signature on File Authorization</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>I authorize the release of all information, records and x-rays to my insurance company. A copy of this statement and signature or the statement \"Signature on File\" is authorized in-lieu of my original signature.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "authorization_signature",
-                        "label": "Patient's Signature",
-                        "email_label": "Authorization Signature",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>Assignment of Benefits</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>I hereby assign all insurance benefits to the above named dentist otherwise payable to me. A copy of this statement and signature or the statement \"Signature on File\" is authorized in-lieu of my original signature on my insurance form.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "assignment_signature",
-                        "label": "Patient's Signature",
-                        "email_label": "Assignment of Benefits Signature",
-                        "type": "text",
-                        "required": true
-                    },
-                    {
-                        "name": "content",
-                        "label": "<h3>HIPAA</h3>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>The Department of Health and Human Services has established a \"Privacy Rule\" to help insure the personal information is protected for privacy. The Privacy Rule was also created in order to provide a standard for certain health care providers to obtain their patients' consent for uses and disclosures of health information about the patient to carry out treatment, payment, or health care operations.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "content",
-                        "label": "<p>As our patient, we want you to know that we respect the privacy of your personal dental information and will do all we can to secure and protect that privacy. We strive to always take reasonable precautions to protect your privacy. When it is appropriate and necessary, we provide the minimum necessary information to only those we feel are in need of your health care information about treatment, payment, or health care operations, in order to provide health care that is in your best interest.</p>",
-                        "type": "label"
-                    },
-                    {
-                        "name": "hipaa2_print_name",
-                        "label": "Print Name",
-                        "email_label": "Print Name",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "hipaa2_signature",
-                        "label": "Signature",
-                        "email_label": "Signature",
-                        "type": "text",
-                        "required": false
-                    },
-                    {
-                        "name": "hipaa2_date",
-                        "label": "Date",
-                        "email_label": "Date",
-                        "type": "date",
-                        "required": false
-                    },
-                    {"name": "content", "label": "<h3>Root Canal Therapy</h3>", "type": "label"},
-					{
-						"name": "content",
-						"label": "<ol data-split=\"true\"><li>Root Canal Therapy is a relatively Painless Procedure and averages one to two visits. Time spent at each appointment is also variable and may range from very short to very long. This is determined by the complexity of the particular case.</li><li>During the course of treatment there is generally no discomfort. Occasionally between appointments reactions may occur, including but not limited to a dull ache or throb, soreness or tenderness, and sometimes severe discomfort and swelling. These complications are generally short-lived and are gone within a few days. These reactions may sometimes prolong treatment, but the chance of success does not have to lessen. If a severe reaction occurs, please call this office. For minor discomfort, over-the-counter medication, such as ibuprofen, is usually adequate.</li><li>No tooth will be treated unless there is a good chance for success. While there can be no certainty of success, healing is expected in 90%+ of the cases. If the prognosis is less, you will be informed. Sometimes Root Canal Therapy will not work. Additional procedures may then become necessary, including retreatment or surgery.</li><li>Between visits and after completion, brush teeth gently and do not chew anything on the tooth to avoid fracturing it or losing the temporary filling.</li><li>Following Root Canal Therapy, you will be referred back to your dentist for proper, final restoration of the tooth, usually a crown or filling.</li><li>Take all medications as prescribed.</li><li>Root Canal Treatment is never easy; it may be difficult or very technical. This is due to factors, such as the anatomy of the tooth, e.g. long, twisted, narrow or tortuous canals. Problems may arise during the course of treatment including the separation of instruments or perforations of the canal. The occurrence of these or other problems does not necessarily imply that the procedure will not have success.</li><li>You are responsible to make and keep all appointments to complete treatment in a timely manner. Failure to complete treatment or prolonging treatment may result in fracture, reinfection or loss of the tooth.</li><li>I, the under signed, have been given the opportunity to ask any questions, and consent to the dental procedures decided upon to be necessary or advisable in the opinion of Paul B. Langer, D.D.S.( this includes the initial examination / Consultation, radiographic images and treatment).</li></ol>",
-						"type": "label"
-					},		
-                    {"name": "root_canal_signature", "label": "Signature", "email_label": "Root Canal Therapy Signature", "type": "text", "required": true},
-                    {"name": "root_canal_date", "label": "Date", "email_label": "Root Canal Therapy Date", "type": "date", "required": true},
-                    {
-                        "label": "Submit",
-                        "type": "submit"
-                    },
-                    {
-                        "type": "group_end"
-                    },
-                    {
-                        "type": "group_end"
-                    }
-                ]
+    "custom_vendor": {
+      "settings": {},
+      "content": {
+        "custom_vendor": {
+          "form_name": "custom_vendor",
+          "submission_url": "{{%/processors/forms/pdf_form_email}}",
+          "subject": "Form Submission: Financial Policy Form",
+          "confirmation": "/custom/content/thank_you/thank_you.html",
+          "pdf": "/custom/pdfs/custom_vendor.pdf",
+          "category": "Vendor Form",
+          "fields": [
+            {
+              "name": "pdf_download",
+              "label": "<i class=\"fad fa-file-download\"></i>Download Printable Version",
+              "type": "pdf_download"
+            },
+            {
+              "name": "form_container",
+              "type": "group_start"
+            },
+            {
+              "name": "form_header",
+              "label": "<h1>Vendor Form</h1>",
+              "type": "label"
+            },
+            {
+              "name": "form_content_container",
+              "type": "group_start"
+            },
+            {
+              "name": "content",
+              "label": "<p>Eyecare Republic and Bausch + Lomb have negotiated a vendor partnership to support your practice with unique pricing and a unique rebate structure. Please fill out the form below and submit it back to us and we will code your practice for our ECR/Bausch + Lomb negotiated pricing and rebate program.</p>",
+              "type": "label"
+            },
+  
+            { "name": "practice_information", "type": "group_start" },
+            {
+              "name": "doctors_name",
+              "label": "Doctor's Name",
+              "email_label": "Doctor's Name",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "practice_name",
+              "label": "Practice Name",
+              "email_label": "Practice Name",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "practice_address",
+              "label": "Practice Address (please include all locations)",
+              "email_label": "Practice Address",
+              "type": "textarea",
+              "required": true
+            },
+            {
+              "name": "phone_number",
+              "label": "Phone Number",
+              "email_label": "Phone Number",
+              "type": "text",
+              "required": true
+            },
+            { "type": "group_end" },
+  
+            { "name": "contact_information", "type": "group_start" },
+            {
+              "name": "practice_phone",
+              "label": "Practice Phone",
+              "email_label": "Practice Phone",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "bl_account_number",
+              "label": "B + L Account Number (please include account numbers for all locations)",
+              "email_label": "B + L Account Number",
+              "type": "textarea",
+              "required": true
+            },
+            {
+              "name": "primary_location",
+              "label": "Primary Location",
+              "email_label": "Primary Location",
+              "type": "text",
+              "required": true
+            },
+            { "type": "group_end" },
+  
+            { "name": "distributor_information", "type": "group_start" },
+            {
+              "name": "distributors_name_account",
+              "label": "Distributor's Name and Account Number",
+              "email_label": "Distributor's Name and Account Number",
+              "type": "text",
+              "required": true
+            },
+            { "type": "group_end" },
+  
+            {
+              "name": "content",
+              "label": "<p>By signing below, I agree to have Bausch + Lomb move the above practice location/s to the ECR and Bausch + Lomb negotiated pricing and rebate program. Once signed, this document serves as my agreement for ECR to facilitate the transfer of my current Bausch + Lomb program to Eyecare Republic's Bausch + Lomb program.</p>",
+              "type": "label"
+            },
+  
+            { "name": "agreement_section", "type": "group_start" },
+            {
+              "name": "current_affiliation",
+              "label": "Current Affiliation for B+L Pricing",
+              "email_label": "Current Affiliation for B+L Pricing",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "doctor_signature",
+              "label": "Doctor Signature",
+              "email_label": "Doctor Signature",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "email_label": "Date",
+              "type": "date",
+              "required": true
+            },
+            { "type": "group_end" },
+            {
+              "name": "",
+              "label": "<h5><span>All parties involved agree that this document may be signed electronically. The electronic signatures appearing on this document are the same as handwritten signatures for the purposes of validity, enforceability, and admissibility.</span></h5>",
+              "type": "label"
+            },
+            {
+              "label": "Submit",
+              "type": "submit"
+            },
+            {
+              "type": "group_end"
+            },
+            {
+              "type": "group_end"
             }
+          ]
         }
+      }
     }
-}
+  }
+  
