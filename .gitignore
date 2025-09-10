@@ -12,3 +12,6 @@ venv/
 # Generated files
 form/generated_form.pdf
 *.pdf
+
+form/form.json
+*.json
