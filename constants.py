@@ -30,10 +30,10 @@ for path in logo_candidates:
 
 BUSINESS_INFO = {
     'logo_path': logo_path,
-    'business_name': 'Dr. Effie Deegan',
-    'address': '23 Old Short Hills Rd, West Orange, NJ 07052',
-    'phone': '(973) 736-4432',
-    'email': 'frontdesk@deegandental.com'
+    'business_name': 'Summit Cargo Trailers',
+    'address': '2773 Marshall Dr., Tifton, GA 31794',
+    'phone': ' (229) 396-4309',
+    'email': 'sales@summitcargotrailers.com'
 }
 
 COLORS = {

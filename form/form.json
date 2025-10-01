@@ -1,14 +1,14 @@
 {
-    "custom_vendor": {
+    "custom_trailer_quote_form": {
       "settings": {},
       "content": {
-        "custom_vendor": {
-          "form_name": "custom_vendor",
+        "custom_trailer_quote_form": {
+          "form_name": "custom_trailer_quote_form",
           "submission_url": "{{%/processors/forms/pdf_form_email}}",
-          "subject": "Form Submission: Financial Policy Form",
+          "subject": "Form Submission: Custom Trailer Quote Form",
           "confirmation": "/custom/content/thank_you/thank_you.html",
-          "pdf": "/custom/pdfs/custom_vendor.pdf",
-          "category": "Vendor Form",
+          "pdf": "/custom/pdfs/custom_trailer_quote_form.pdf",
+          "category": "Custom Trailer Quote Form",
           "fields": [
             {
               "name": "pdf_download",
@@ -21,7 +21,7 @@
             },
             {
               "name": "form_header",
-              "label": "<h1>Vendor Form</h1>",
+              "label": "<h1>Custom Trailer Quote Form</h1>",
               "type": "label"
             },
             {
@@ -30,119 +30,576 @@
             },
             {
               "name": "content",
-              "label": "<p>Eyecare Republic and Bausch + Lomb have negotiated a vendor partnership to support your practice with unique pricing and a unique rebate structure. Please fill out the form below and submit it back to us and we will code your practice for our ECR/Bausch + Lomb negotiated pricing and rebate program.</p>",
+              "label": "<p>Request a personalized quote for your custom trailer by filling out this form.</p>",
               "type": "label"
             },
   
-            { "name": "practice_information", "type": "group_start" },
-            {
-              "name": "doctors_name",
-              "label": "Doctor's Name",
-              "email_label": "Doctor's Name",
-              "type": "text",
-              "required": true
-            },
-            {
-              "name": "practice_name",
-              "label": "Practice Name",
-              "email_label": "Practice Name",
-              "type": "text",
-              "required": true
-            },
-            {
-              "name": "practice_address",
-              "label": "Practice Address (please include all locations)",
-              "email_label": "Practice Address",
-              "type": "textarea",
-              "required": true
-            },
-            {
-              "name": "phone_number",
-              "label": "Phone Number",
-              "email_label": "Phone Number",
-              "type": "text",
-              "required": true
-            },
-            { "type": "group_end" },
+            {"name": "name_details", "type": "group_start"},
+            {"name": "first_name", "label": "First Name", "email_label": "First Name", "type": "text", "required": true},
+            {"name": "last_name", "label": "Last Name", "email_label": "Last Name", "type": "text", "required": true},
+            {"type": "group_end"},
   
-            { "name": "contact_information", "type": "group_start" },
+            {"name": "phone", "label": "Phone", "email_label": "Phone", "type": "text", "required": true},
+            {"name": "email_address", "label": "Email", "email_label": "Email", "type": "email", "required": true},
+
+            {"name": "content", "label": "<p>Tell us how you plan to use your trailer.</p>", "type": "label"},
             {
-              "name": "practice_phone",
-              "label": "Practice Phone",
-              "email_label": "Practice Phone",
-              "type": "text",
+              "name": "primary_trailer_use",
+              "label": "Primary trailer use",
+              "email_label": "Primary trailer use",
+              "type": "select",
+              "option": [
+                "ATV / Off-Road Vehicle",
+                "Car Hauler",
+                "Competition / Racing Trailer",
+                "Motorcycle Hauler",
+                "Office / Mobile Workspace",
+                "Mobile Command / Emergency Response",
+                "Utility / Service Trailer",
+                "Cargo / General Hauling",
+                "Off-Grid / Tiny Living",
+                "Mobile Retail / Pop-up Shop",
+                "Concession / Food & Beverage Trailer",
+                "BBQ / Cooking Competition Trailer",
+                "Pet Grooming / Mobile Grooming Service",
+                "Event / Entertainment Trailer",
+                "Other"
+              ],
               "required": true
             },
-            {
-              "name": "bl_account_number",
-              "label": "B + L Account Number (please include account numbers for all locations)",
-              "email_label": "B + L Account Number",
-              "type": "textarea",
-              "required": true
-            },
-            {
-              "name": "primary_location",
-              "label": "Primary Location",
-              "email_label": "Primary Location",
-              "type": "text",
-              "required": true
-            },
-            { "type": "group_end" },
   
-            { "name": "distributor_information", "type": "group_start" },
+            {"name": "content", "label": "<h3>Trailer Type</h3>", "type": "label"},
+            {"name": "content", "label": "<p>What type of trailer do you want to build?</p>", "type": "label"},
             {
-              "name": "distributors_name_account",
-              "label": "Distributor's Name and Account Number",
-              "email_label": "Distributor's Name and Account Number",
-              "type": "text",
+              "name": "trailer_type",
+              "label": "Trailer Type",
+              "email_label": "Trailer Type",
+              "type": "select",
+              "option": [
+                "Bathroom Trailer",
+                "Car Hauler Trailer",
+                "Concession Trailer",
+                "Coffee Trailer",
+                "Dump Trailer",
+                "Food & Beverage Trailer",
+                "Gooseneck Trailer",
+                "Gullwing Trailer",
+                "Hybrid Trailer",
+                "Office Trailer",
+                "Pet Grooming Trailer",
+                "Porch Trailer",
+                "Race Ready Trailer",
+                "Specialty Trailer",
+                "Splicing Trailer",
+                "Stage & Observation Trailer",
+                "Standard Trailer",
+                "Utility Trailer",
+                "Vendor Trailer",
+                "Work Trailer",
+                "Other / Not Listed"
+              ],
               "required": true
             },
-            { "type": "group_end" },
+  
+            {
+              "name": "trailer_width",
+              "label": "Trailer Width",
+              "email_label": "Trailer Width",
+              "type": "select",
+              "option": ["5' Wide", "6' Wide", "7' Wide", "8.5' Wide"],
+              "required": true
+            },
+            {
+              "name": "trailer_length",
+              "label": "Trailer Length",
+              "email_label": "Trailer Length",
+              "type": "select",
+              "option": [
+                "8'", "9'", "10'", "11'", "12'", "13'", "14'", "15'", "16'", "17'",
+                "18'", "19'", "20'", "21'", "22'", "23'", "24'", "25'", "26'", "27'",
+                "28'", "29'", "30'", "31'", "32'", "33'", "34'", "35'", "36'", "37'",
+                "38'", "39'", "40'", "41'", "42'", "43'", "44'", "45'", "46'", "47'",
+                "48'", "49'", "50'", "51'", "52'"
+              ],
+              "required": true
+            },
+            {
+              "name": "interior_height",
+              "label": "Interior Height",
+              "email_label": "Interior Height",
+              "type": "select",
+              "option": ["6'", "6'6\"", "7'", "7'6\"", "8'", "8'6\"", "9'", "9'6\"", "10'"],
+              "required": true
+            },
+            {
+              "name": "axle_size",
+              "label": "Axle Size",
+              "email_label": "Axle Size",
+              "type": "select",
+              "option": [
+                "5000lb Leaf Spring Axle",
+                "3500lb Torsion Axle",
+                "5200lb Leaf Spring Axle",
+                "5200lb Torsion Axle",
+                "7000lb Leaf Spring Axle",
+                "7000lb Torsion Axle",
+                "8000lb Torsion Axle",
+                "10,000lb Torsion Axle"
+              ],
+              "required": true
+            },
+
+            {
+              "name": "trailer_hitch_type",
+              "label": "Trailer Hitch / Pull Type",
+              "email_label": "Trailer Hitch / Pull Type",
+              "type": "select",
+              "option": ["Bumper Pull (Standard Hitch)", "Gooseneck (Truck bed mount)"],
+              "required": true
+            },
+            {
+              "name": "bathroom_options",
+              "label": "Bathroom Options",
+              "email_label": "Bathroom Options",
+              "type": "select",
+              "option": ["No Bathroom", "Full Bathroom", "Half Bathroom", "Other"],
+              "required": true
+            },
+  
+            {
+              "name": "porch_options",
+              "label": "Porch Options",
+              "email_label": "Porch Options",
+              "type": "select",
+              "option": ["5' Porch", "6' Porch", "7' Porch", "8' Porch", "9' Porch", "Yes, but I don't know what size", "No I don't want a porch"],
+              "required": true
+            },
+  
+            {"name": "content", "label": "<h3>Exterior Metal Finish</h3>", "type": "label"},
+            {"name": "content", "label": "<p>All trailers come standard with durable .080 Polycore panels.</p>", "type": "label"},
+            {
+              "name": "exterior_metal_finish",
+              "label": "Select Your Exterior Metal Finish",
+              "email_label": "Exterior Metal Finish",
+              "type": "checkbox",
+              "option": {
+                "two_toned": "Two-Toned (Select 2 Colors)",
+                "blackout_package": "Blackout Package (All black trim, ATP and Fenders)",
+                "white": "White",
+                "black": "Black",
+                "silver_frost": "Silver Frost",
+                "charcoal": "Charcoal",
+                "yellow": "Yellow",
+                "red": "Red",
+                "orange": "Orange",
+                "pink": "Pink",
+                "green": "Green",
+                "emerald_green": "Emerald Green",
+                "lime_green": "Lime Green",
+                "blue": "Blue",
+                "bright_blue": "Bright Blue",
+                "indigo_blue": "Indigo Blue",
+                "pepsi_blue": "Pepsi Blue",
+                "purple": "Purple",
+                "brandi_wine": "Brandi Wine",
+                "desert_tan": "Desert Tan",
+                "other_color": "Other"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Interior Finishes</h3>", "type": "label"},
+            {
+              "name": "interior_wall_color",
+              "label": "Interior Wall Color",
+              "email_label": "Interior Wall Color",
+              "type": "select",
+              "option": ["White", "Silver", "Charcoal", "Mill Finish", "Other / Not Sure"],
+              "required": true
+            },
+            {
+              "name": "floor_options",
+              "label": "Floor Options",
+              "email_label": "Floor Options",
+              "type": "select",
+              "option": [
+                "Diamond ATP Floor",
+                "Diamond RTP Floor",
+                "Coin RTP Floor",
+                "Dark Wood Vinyl Floor",
+                "Light Wood Vinyl Floor",
+                "Checkered Floor",
+                "Carpet Floor",
+                "Other / Not Sure"
+              ],
+              "required": true
+            },
+  
+            {"name": "content", "label": "<h3>Standard Exterior Upgrades</h3>", "type": "label"},
+            {
+              "name": "standard_exterior_upgrades",
+              "label": "",
+              "email_label": "Standard Exterior Upgrades",
+              "type": "checkbox",
+              "option": {
+                "generator_box": "Generator Box or Platform (Tongue Mounted)",
+                "ventilated_gen_box": "Ventilated Generator Box (Tongue Mounted)",
+                "gen_slide_tray": "Generator Slide Tray",
+                "two_tone_gen": "Two-tone Generator Box",
+                "tire_mast": "Tire Mast",
+                "access_ladder": "Access Ladder",
+                "ladder_rack": "Ladder Rack",
+                "spread_axles": "Spread Axles",
+                "bogey_wheels": "Bogey Wheels",
+                "heavy_duty_ramp": "Heavy Duty Ramp",
+                "rtp_ramp_flap": "RTP Ramp & Flap",
+                "transition_flap": "Transition Flap",
+                "extended_flap": "Extended Flap",
+                "scissor_jack": "Scissor Jack / Stab Jacks",
+                "walk_on_roof": "Walk on Roof",
+                "outside_water_spigot": "Outside Water Spigot"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Premium Exterior Upgrades</h3>", "type": "label"},
+            {
+              "name": "premium_exterior_upgrades",
+              "label": "",
+              "email_label": "Premium Exterior Upgrades",
+              "type": "checkbox",
+              "option": {
+                "observation_deck": "Observation Deck",
+                "drop_down_stage": "Drop Down Stage",
+                "black_inlay_rims": "Black Inlay Mag Rims",
+                "aluminum_mag_rims": "Aluminum Mag Rims",
+                "wood_siding": "Wood siding",
+                "electric_awning": "Electric Awning",
+                "electric_awning_led": "Electric Awning with LED Light Strip",
+                "speaker_system": "Speaker System",
+                "under_glow": "Under Glow Lighting",
+                "menu_box": "Menu Box",
+                "shadow_box": "Shadow Box"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Standard Interior Upgrades</h3>", "type": "label"},
+            {
+              "name": "standard_interior_upgrades",
+              "label": "",
+              "email_label": "Standard Interior Upgrades",
+              "type": "checkbox",
+              "option": {
+                "vent_gen_compartment": "Ventilated Generator Compartment",
+                "gen_compartment": "Generator Compartment",
+                "upper_base_cabinets": "Upper / Base Cabinets",
+                "closet": "Closet",
+                "work_bench": "Work Bench",
+                "prep_tables": "Prep Tables",
+                "counters": "Counters",
+                "laminate_countertops": "Laminate Countertops",
+                "shelf_lip": "Shelf with Lip",
+                "toolbox": "Toolbox (Red or Black)",
+                "recessed_tire": "Recessed Tire Compartment",
+                "additional_d_rings": "Additional D-Rings",
+                "carpet_walls": "Carpet on Walls"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Premium Interior Upgrades</h3>", "type": "label"},
+            {
+              "name": "premium_interior_upgrades",
+              "label": "",
+              "email_label": "Premium Interior Upgrades",
+              "type": "checkbox",
+              "option": {
+                "custom_cabinets": "Custom Cabinets",
+                "custom_closet": "Custom Closet",
+                "custom_tables": "Custom Tables",
+                "custom_bed": "Custom Bed",
+                "jack_knife_couch": "Jack Knife Couch to Bed",
+                "happi_jack_bed": "Happi Jack Bed Lift",
+                "mini_split_ac": "Mini Split AC",
+                "ac_heat_strip": "AC with Heat Strip",
+                "ice_machine": "Ice Machine",
+                "mixer": "Mixer",
+                "fire_suppression": "Fire Suppression",
+                "undercounter_fridge": "Undercounter fridge",
+                "full_fridge": "Full size Fridge / Freezer",
+                "speaker_radio": "Speaker / Radio System"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Windows, Doors & Structure</h3>", "type": "label"},
+            {
+              "name": "windows_doors_upgrades",
+              "label": "",
+              "email_label": "Windows & Doors",
+              "type": "checkbox",
+              "option": {
+                "concession_window": "Concession Window",
+                "concession_glass": "Concession Window with Glass and Screen",
+                "drop_leaf_shelf": "Drop Leaf Shelf",
+                "window_15x15": "15x15 Window",
+                "window_30x30": "30x30 Window",
+                "viewing_glass": "Viewing Glass Window",
+                "double_doors": "Double Doors (Side or Front of Ramp)",
+                "gullwing_door": "Gullwing Side Access Door",
+                "gullwing_removable": "Gullwing Side Access Door with Removable Fender"
+              }
+            },
+            {
+              "name": "structure_upgrades",
+              "label": "",
+              "email_label": "Structure Upgrades",
+              "type": "checkbox",
+              "option": {
+                "12_center_wheels": "12\" On Center Wheels",
+                "12_center_floor": "12\" On Center Floor",
+                "12_center_roof": "12\" On Center Roof",
+                "double_plywood": "Double 3/4\" Plywood Floor",
+                "struct_bogey_wheels": "Bogey Wheels",
+                "struct_scissor_jacks": "Scissor Jacks",
+                "stab_jacks": "Stab Jacks",
+                "one_piece_roof": "1 Piece Roof"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Electrical & Lighting</h3>", "type": "label"},
+            {
+              "name": "electrical_lighting_upgrades",
+              "label": "",
+              "email_label": "Electrical & Lighting Upgrades",
+              "type": "checkbox",
+              "option": {
+                "110v_recessed": "110V Recessed Lights",
+                "110v_led": "110V 2x2 LED Lights",
+                "4ft_led_strips": "4' LED Light Strips",
+                "electrical_package": "Electrical Package",
+                "mini_split_heat": "Mini Split AC with Heat Strip",
+                "gen_base_cabinets": "Generator Compartment in Base Cabinets",
+                "elec_vent_gen": "Ventilated Generator Compartment",
+                "elec_gen_box": "Generator Box or Platform (Tongue Mounted)",
+                "elec_vent_gen_box": "Ventilated Generator Box (Tongue Mounted)",
+                "elec_gen_slide": "Generator Slide Tray",
+                "awning_switch": "Electric Awning Interior Switch",
+                "rear_spoiler_lights": "Rear Spoiler with Lights",
+                "race_lights": "Race Lights",
+                "powered_roof_vent": "Powered Roof Vent",
+                "winch_in": "Winch in"
+              }
+            },
+  
+            {"name": "content", "label": "<h3>Plumbing & Utility</h3>", "type": "label"},
+            {
+              "name": "plumbing_utility_upgrades",
+              "label": "",
+              "email_label": "Plumbing & Utility Upgrades",
+              "type": "checkbox",
+              "option": {
+                "bathroom_packages": "Full & Half Bathroom Packages",
+                "instant_hot_water": "Instant Hot Water Heater",
+                "large_tanks": "Large Tanks",
+                "plumb_fire_suppression": "Fire Suppression",
+                "propane_package": "Propane package",
+                "triple_sink": "Triple Sink",
+                "handwash_station": "Handwash Station",
+                "plumb_water_spigot": "Outside Water Spigot",
+                "plumbing_access_door": "Access Door to Plumbing",
+                "winch": "Winch",
+                "plumb_d_rings": "Additional D-Rings",
+                "etrack_floors": "E-Track on Floors",
+                "etrack_walls": "E-Track on Walls",
+                "atp_ramp_overs": "ATP Ramp Overs",
+                "atp_powered_etrack": "ATP Ramp Overs with Powered E-Track"
+              }
+            },
   
             {
               "name": "content",
-              "label": "<p>By signing below, I agree to have Bausch + Lomb move the above practice location/s to the ECR and Bausch + Lomb negotiated pricing and rebate program. Once signed, this document serves as my agreement for ECR to facilitate the transfer of my current Bausch + Lomb program to Eyecare Republic's Bausch + Lomb program.</p>",
+              "label": "<h3>Storage & Organization Upgrades</h3>",
               "type": "label"
+            },
+            {
+              "name": "storage_organization_upgrades",
+              "label": "",
+              "email_label": "Storage & Organization Upgrades",
+              "type": "checkbox",
+              "option": {
+                "storage_custom_cabinets": "Custom Cabinets",
+                "upper_cabinets": "Upper Cabinets",
+                "base_cabinets": "Base Cabinets",
+                "custom_shelves": "Custom Shelves",
+                "storage_custom_closet": "Custom Closet",
+                "storage_drop_leaf": "Drop Leaf Shelf",
+                "recessed_spare_tire": "Recessed Spare Tire Compartment",
+                "winch_storage": "Winch Storage Compartment"
+              }
             },
   
-            { "name": "agreement_section", "type": "group_start" },
+            {"name": "content", "label": "<h3>Featured Race Ready Trailer Upgrades</h3>", "type": "label"},
             {
-              "name": "current_affiliation",
-              "label": "Current Affiliation for B+L Pricing",
-              "email_label": "Current Affiliation for B+L Pricing",
-              "type": "text",
-              "required": true
+              "name": "featured_race_ready_upgrades",
+              "label": "",
+              "email_label": "Featured Race Ready Trailer Upgrades",
+              "type": "checkbox",
+              "option": {
+                "race_etrack": "E-Track on Floors / Walls",
+                "race_d_rings": "Additional D-Rings",
+                "race_atp_overs": "ATP Ramp Overs",
+                "race_atp_etrack": "ATP Ramp Overs with E-Track",
+                "race_transition_flap": "Transition Flap",
+                "race_extended_flap": "Extended Flap",
+                "race_rtp_ramp": "RTP Ramp and Flap",
+                "escape_door": "Escape Door",
+                "race_gullwing": "Gullwing Side Access Door with Removable Fender",
+                "race_ladder_rack": "Ladder Rack",
+                "observation_deck_roof": "Observation Deck & Walk on Roof",
+                "race_spread_axles": "Spread Axles",
+                "race_scissor_jacks": "Scissor Jacks / Stab Jacks",
+                "race_bogey": "Bogey Wheels",
+                "race_awning": "Electric Awning",
+                "race_awning_led": "Electric Awning & LED Light Strip",
+                "race_underglow": "Under Glow Lighting",
+                "winch_compartment": "Winch / Winch Plate Compartment",
+                "race_recessed_tire": "Recessed Spare Tire Compartment",
+                "race_closet": "Custom Closet",
+                "race_cabinets": "Custom Cabinets",
+                "race_upper_base": "Upper & Base Cabinets",
+                "race_work_bench": "Work Bench",
+                "race_toolbox": "Toolbox (Red or Black)",
+                "race_handwash": "Handwash Station",
+                "race_bed": "Custom Bed",
+                "happi_jack": "Happi Jack Beed Lift",
+                "race_jack_knife": "Jack Knife Couch to Bed",
+                "race_ac_heat": "AC with Heat Strip",
+                "race_mini_split": "Mini Split",
+                "race_bathroom": "Bathroom Package (Half or Full)",
+                "race_rear_spoiler": "Rear Spoiler with lights",
+                "race_race_lights": "Race Lights",
+                "race_vent_gen_box": "Ventilated Generator Box (Tongue Mounted)",
+                "race_gen_platform": "Generator Platform (Tongue Mounted)",
+                "race_vent_gen_comp": "Ventilated Generator Compartment",
+                "race_speaker": "Speaker / Radio System",
+                "race_under_fridge": "Under Counter Fridge",
+                "race_full_fridge": "Full Fridge"
+              }
             },
+  
+            {"name": "content", "label": "<h3>Featured Pet Grooming Trailer Upgrades</h3>", "type": "label"},
             {
-              "name": "doctor_signature",
-              "label": "Doctor Signature",
-              "email_label": "Doctor Signature",
-              "type": "text",
-              "required": true
+              "name": "featured_pet_grooming_upgrades",
+              "label": "",
+              "email_label": "Featured Pet Grooming Trailer Upgrades",
+              "type": "checkbox",
+              "option": {
+                "dog_wash_station": "Dog Wash Station with Flying Pig Tub",
+                "grooming_table": "Grooming Table",
+                "electric_grooming": "Electric Grooming Table",
+                "kennels": "Kennels",
+                "water_package": "Water Package",
+                "pet_hot_water": "Instant Hot Water Heater",
+                "pet_bathroom": "Bathroom Packages (Half or Full)",
+                "additional_outlets": "Additional Outlets",
+                "50amp_package": "50 AMP Electrical Package with MB Plug",
+                "pet_toolbox": "Toolbox (Red or Black)",
+                "pet_closet": "Custom Closet",
+                "pet_custom_cabinets": "Custom Cabinets",
+                "pet_upper_cabinets": "Upper Cabinets",
+                "pet_base_cabinets": "Base Cabinets",
+                "pet_closet_std": "Closet",
+                "drawer_base_cabinets": "Drawers in Base Cabinets",
+                "pet_mini_split": "Mini Split AC with Heat Strip",
+                "pet_roof_vent": "Powered Roof Vent",
+                "pet_underglow": "Under Glow Lighting",
+                "pet_handwash": "Handwash Station",
+                "pet_vent_gen": "Ventilated Generator Compartment",
+                "pet_speaker": "Speaker / Radio System",
+                "pet_under_fridge": "Under Counter Fridge"
+              }
             },
+  
+            {"name": "content", "label": "<h3>Featured Concession Trailer Upgrades</h3>", "type": "label"},
             {
-              "name": "date",
-              "label": "Date",
-              "email_label": "Date",
-              "type": "date",
-              "required": true
+              "name": "featured_concession_upgrades",
+              "label": "",
+              "email_label": "Featured Concession Trailer Upgrades",
+              "type": "checkbox",
+              "option": {
+                "conc_window_glass": "Concession Window with Glass and Screen",
+                "viewing_window": "Viewing Window",
+                "conc_menu_box": "Menu Box",
+                "conc_shadow_box": "Shadow Box",
+                "triple_sink_package": "Triple Sink Package",
+                "handwash_sink": "Handwash Sink",
+                "conc_prep_tables": "Prep Tables",
+                "prep_counter": "Prep Counter",
+                "conc_shelf_lip": "Shelf with Lip",
+                "conc_drop_leaf": "Drop Leaf Shelf",
+                "below_counter_fridge": "Below Counter Fridge",
+                "conc_full_fridge": "Full Size Fridge or Freezer",
+                "frying_station": "Frying Station",
+                "oven": "Oven",
+                "range_hood": "Range Hood",
+                "grill": "Grill",
+                "conc_mixer": "Mixer",
+                "conc_ice_machine": "Ice Machine",
+                "drop_in_ice_bin": "Drop in Ice Bin",
+                "conc_propane": "Propane Package",
+                "conc_gen_box": "Generator Box or Platform (Tongue Mounted)",
+                "conc_vent_gen_box": "Ventilated Generator Box",
+                "conc_vent_gen_comp": "Ventilated Generator Compartment",
+                "conc_awning": "Electric Awning",
+                "conc_awning_led": "Electric Awning with LED Light Strip",
+                "conc_speaker": "Speaker System",
+                "conc_underglow": "Under Glow Lighting",
+                "conc_wood_siding": "Wood Siding",
+                "wood_vinyl_floor": "Wood Vinyl Floor (Dark or Light)"
+              }
             },
-            { "type": "group_end" },
+  
+            {"name": "content", "label": "<h3>Featured BBQ / Cooking Competition Trailer Upgrades</h3>", "type": "label"},
             {
-              "name": "",
-              "label": "<h5><span>All parties involved agree that this document may be signed electronically. The electronic signatures appearing on this document are the same as handwritten signatures for the purposes of validity, enforceability, and admissibility.</span></h5>",
-              "type": "label"
+              "name": "featured_bbq_upgrades",
+              "label": "",
+              "email_label": "Featured BBQ / Cooking Competition Trailer Upgrades",
+              "type": "checkbox",
+              "option": {
+                "porch_gullwing": "Porch with Gullwing Doors",
+                "porch_screen": "Porch with Screen",
+                "bbq_custom_cabinets": "Custom Cabinets",
+                "custom_closets": "Custom Closets",
+                "bbq_upper_base": "Upper & Base Cabinets",
+                "closets": "Closets",
+                "prep_counters": "Prep Counters",
+                "bbq_prep_tables": "Prep Tables",
+                "bbq_handwash": "Handwash Sink",
+                "bbq_triple_sink": "Triple Sink Package",
+                "fry_station": "Fry Station",
+                "bbq_grill": "Grill",
+                "bbq_oven": "Oven",
+                "bbq_range_hood": "Range Hood",
+                "fire_suppression_system": "Fire Suppression System",
+                "bbq_full_fridge": "Full Size Fridge or Freezer",
+                "bbq_menu_box": "Menu Box",
+                "bbq_shadow_box": "Shadow Box",
+                "bbq_conc_window": "Concession Window",
+                "bbq_conc_glass": "Concession Window with Glass and Screen",
+                "bbq_viewing_window": "Viewing Window",
+                "bbq_water_spigot": "Outside Water Spigot",
+                "bbq_underglow": "Under Glow Lighting",
+                "bbq_awning": "Electric Awning",
+                "bbq_awning_led": "Electric Awning & LED Light Strip",
+                "bbq_vent_gen_comp": "Ventilated Generator Compartment",
+                "bbq_vent_gen_platform": "Ventilated Generator Box or Platform",
+                "bbq_gen_slide": "Generator Slide Tray",
+                "bbq_recessed_tire": "Recessed Tire Compartment",
+                "bbq_speaker": "Speaker System",
+                "bbq_bathroom": "Bathroom Package (Half or Full)"
+              }
             },
-            {
-              "label": "Submit",
-              "type": "submit"
-            },
-            {
-              "type": "group_end"
-            },
-            {
-              "type": "group_end"
-            }
+  
+            {"label": "Submit", "type": "submit"},
+            {"type": "group_end"},
+            {"type": "group_end"}
           ]
         }
       }

@@ -17,8 +17,8 @@ LABEL_STYLES = {
         font_name='Helvetica-Bold',  # Standard font
         font_size=16,
         color=colors.black,
-        spacing_before=8,
-        spacing_after=12,
+        spacing_before=0,
+        spacing_after=0,
         alignment='center'
     ),
     'h3': LabelStyle(

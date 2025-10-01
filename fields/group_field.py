@@ -10,12 +10,12 @@ class GroupField:
         
         # Simplified group types - only track functional layout groups
         self.layout_groups = {
-            'two_columns': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 20},
-            'four_columns': {'columns': 4, 'widths': [0.22, 0.22, 0.22, 0.22], 'spacing': 15},
-            'name_details': {'columns': 2, 'widths': [0.6, 0.4], 'spacing': 15},
-            'address_details': {'columns': 3, 'widths': [0.4, 0.3, 0.3], 'spacing': 12},
-            'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 15},
-            'phone_details': {'columns': 3, 'widths': [0.33, 0.33, 0.33], 'spacing': 10},
+            'two_columns': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 10},  # Reduced from 20
+            'four_columns': {'columns': 4, 'widths': [0.22, 0.22, 0.22, 0.22], 'spacing': 8},  # Reduced from 15
+            'name_details': {'columns': 2, 'widths': [0.6, 0.4], 'spacing': 10},  # Reduced from 15
+            'address_details': {'columns': 3, 'widths': [0.4, 0.3, 0.3], 'spacing': 8},  # Reduced from 12
+            'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},  # Reduced from 15
+            'phone_details': {'columns': 3, 'widths': [0.33, 0.33, 0.33], 'spacing': 8},  # Reduced from 10
         }
         
         # Container groups that we ignore for layout purposes
@@ -43,25 +43,26 @@ class GroupField:
             self._initialize_group(clean_group_name)
         
     def _initialize_group(self, group_name):
-        """Initialize a layout group with proper configuration"""
         self.generator.current_group = group_name
         self.generator.group_fields = []
         self.generator.group_start_y = self.generator.current_y
-        
+
         config = self.layout_groups[group_name]
         columns = config['columns']
         widths = config['widths']
         spacing = config['spacing']
-        
-        # Calculate actual pixel widths
+
         total_spacing = spacing * (columns - 1) if columns > 1 else 0
         available_width = self.field_width - total_spacing
-        
-        self.generator.column_widths = [
-            width * available_width for width in widths
-        ]
+
+        self.generator.column_widths = [w * available_width for w in widths]
         self.generator.group_spacing = spacing
         self.generator.group_columns = columns
+
+        # NEW: consistent vertical rhythm used by checkbox rows
+        # works well with 12px boxes + 9/10pt labels
+        self.generator.group_row_height = 22
+        self.generator.group_row_gap = 10  # gap added after a completed row
 
     def end_group(self):
         """End the current group and align fields properly"""

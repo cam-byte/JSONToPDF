@@ -16,6 +16,8 @@ class SelectField:
         current_size = c._fontsize
         current_color = c._fillColorObj
 
+        self.generator.current_y -= 5  # Add this line
+
         # Calculate field positioning
         field_x, field_width, field_y = self._get_field_position()
         starting_y = field_y
@@ -116,4 +118,4 @@ class SelectField:
             row_start = len(self.generator.group_fields) - self.generator.group_columns
             row_fields = self.generator.group_fields[row_start:]
             min_y = min(f.get('y', self.generator.current_y) for f in row_fields)
-            self.generator.current_y = min_y - 10
+            self.generator.current_y = min_y - 15  # Increased from 10 for better separation between rows
