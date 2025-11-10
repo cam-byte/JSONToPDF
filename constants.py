@@ -30,10 +30,10 @@ for path in logo_candidates:
 
 BUSINESS_INFO = {
     'logo_path': logo_path,
-    'business_name': 'Summit Cargo Trailers',
-    'address': '2773 Marshall Dr., Tifton, GA 31794',
-    'phone': ' (229) 396-4309',
-    'email': 'sales@summitcargotrailers.com'
+    'business_name': 'Main Street Dental',
+    'address': '5205 Office Park Blvd, Bradenton, FL 34203',
+    'phone': '(941) 216-5965',
+    'email': ''
 }
 
 COLORS = {
