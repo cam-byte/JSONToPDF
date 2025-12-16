@@ -84,7 +84,7 @@ class RadioButton:
             text_x = radio_x + 18
             text_y = current_row_y - 12
             
-            # FIXED: Use actual Color objects, not strings
+            # FIXED: Use shape="square" and buttonStyle="check" to avoid Adobe Acrobat rendering issues
             c.acroForm.radio(
                 name=field_name,
                 tooltip=f"{field_name}: {option_label}",
@@ -93,14 +93,16 @@ class RadioButton:
                 y=radio_y,
                 size=12,
                 selected=0,
-                shape="circle",
+                buttonStyle="check",   # Square with checkmark when selected
+                shape="square",        # Square outline
+                borderStyle="solid",   # Explicit border style for predictable rendering
                 borderColor=colors.black,
-                fillColor=colors.white,
                 textColor=colors.black,
                 borderWidth=1,
                 forceBorder=True,
                 fieldFlags=49152,
                 annotationFlags=4
+                # No fillColor - can cause rendering artifacts
             )
             
             # Draw option label

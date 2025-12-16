@@ -1,14 +1,14 @@
 {
-	"custom_generic_form": {
+	"custom_smile_eval": {
 		"settings": {},
 		"content": {
-			"custom_generic_form": {
-				"form_name": "custom_generic_form",
+			"custom_smile_eval": {
+				"form_name": "custom_smile_eval",
 				"submission_url": "{{%/processors/forms/pdf_form_email}}",
-				"subject": "Form Submission: Simple Intake Form",
+				"subject": "Form Submission: Smile Evaluation Form",
 				"confirmation": "/custom/content/thank_you/thank_you.html",
-				"pdf": "/custom/pdfs/custom_generic_form.pdf",
-				"category": "Simple Intake",
+				"pdf": "/custom/pdfs/custom_smile_eval.pdf",
+				"category": "Smile Evaluation",
 				"type": "intake",
 				"fields": [
 					{
@@ -22,7 +22,7 @@
 					},
 					{
 						"name": "form_header",
-						"label": "<h1>Simple Intake Form</h1>",
+						"label": "<h1>Smile Evaluation</h1>",
 						"type": "label"
 					},
 					{
@@ -31,25 +31,120 @@
 					},
 					{
 						"name": "name",
-						"label": "Student Name/Guardian Name",
-						"email_label": "Student Name/Guardian Name",
+						"label": "Full Name",
+						"email_label": "Full Name",
 						"type": "text",
-						"required": true
-					},
+						"required": false
+					  },
 					{
-						"name": "phone",
-						"label": "Phone",
-						"email_label": "Phone",
-						"type": "text",
-						"required": true
-					},
-					{
-						"name": "email",
-						"label": "Email",
-						"email_label": "Email",
-						"type": "email",
-						"required": true
-					},
+						"name": "last_dental_visit_date",
+						"label": "When was your last visit to the dentist?",
+						"email_label": "When was your last visit to the dentist?",
+						"type": "date",
+						"required": false
+					  },
+					  {
+						"name": "like_smile_appearance",
+						"label": "Do you like the appearance of your teeth, and your smile?",
+						"email_label": "Do you like the appearance of your teeth, and your smile?",
+						"type": "radio",
+						"required": false,
+						"option": { "yes": "Yes", "no": "No" }
+					  },
+					  {
+						"name": "smile_appearance_explanation",
+						"label": "If not, please explain",
+						"email_label": "If not, please explain",
+						"type": "textarea",
+						"required": false
+					  },
+					
+					  {
+						"name": "teeth_in_alignment",
+						"label": "Are your teeth all in alignment (straight)?",
+						"email_label": "Are your teeth all in alignment (straight)?",
+						"type": "radio",
+						"required": false,
+						"option": { "yes": "Yes", "no": "No" }
+					  },
+					  {
+						"name": "teeth_alignment_explanation",
+						"label": "If not, please explain",
+						"email_label": "If not, please explain",
+						"type": "textarea",
+						"required": false
+					  },
+					
+					  {
+						"name": "have_spaces_you_dislike",
+						"label": "Do you have spaces that you do not like?",
+						"email_label": "Do you have spaces that you do not like?",
+						"type": "radio",
+						"required": false,
+						"option": { "yes": "Yes", "no": "No" }
+					  },
+					  {
+						"name": "spaces_explanation",
+						"label": "If yes, please explain",
+						"email_label": "If yes, please explain",
+						"type": "textarea",
+						"required": false
+					  },
+					
+					  {
+						"name": "like_color_and_shape",
+						"label": "Do you like the color and shape of your teeth?",
+						"email_label": "Do you like the color and shape of your teeth?",
+						"type": "radio",
+						"required": false,
+						"option": { "yes": "Yes", "no": "No" }
+					  },
+					  {
+						"name": "color_shape_explanation",
+						"label": "If not, please explain",
+						"email_label": "If not, please explain",
+						"type": "textarea",
+						"required": false
+					  },
+					
+					  {
+						"name": "teeth_condition",
+						"label": "Are your teeth:",
+						"email_label": "Are your teeth:",
+						"type": "checkbox",
+						"option": ["Chipped", "Protruding", "Hidden"]
+					  },
+					
+					  {
+						"name": "like_how_teeth_come_together",
+						"label": "Do you like the way your teeth come together?",
+						"email_label": "Do you like the way your teeth come together?",
+						"type": "radio",
+						"required": false,
+						"option": { "yes": "Yes", "no": "No" }
+					  },
+					
+					  {
+						"name": "old_fillings_or_dental_work_disliked",
+						"label": "Are there old fillings or dental work that you do not like looking at?",
+						"email_label": "Are there old fillings or dental work that you do not like looking at?",
+						"type": "textarea",
+						"required": false
+					  },
+					  {
+						"name": "change_most_in_appearance",
+						"label": "What would you change most in the appearance of your teeth?",
+						"email_label": "What would you change most in the appearance of your teeth?",
+						"type": "textarea",
+						"required": false
+					  },
+					  {
+						"name": "how_would_you_like_teeth_to_look",
+						"label": "How would you like your teeth to look?",
+						"email_label": "How would you like your teeth to look?",
+						"type": "textarea",
+						"required": false
+					  },
 					{
 						"label": "Submit",
 						"type": "submit"

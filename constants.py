@@ -30,9 +30,9 @@ for path in logo_candidates:
 
 BUSINESS_INFO = {
     'logo_path': logo_path,
-    'business_name': 'Main Street Dental',
-    'address': '5205 Office Park Blvd, Bradenton, FL 34203',
-    'phone': '(941) 216-5965',
+    'business_name': 'Vaccaro Aesthetic',
+    'address': '661 Shunpike Rd, Suite #1 Green Village, NJ 07935',
+    'phone': '(973) 377-8811',
     'email': ''
 }
 
