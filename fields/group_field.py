@@ -12,8 +12,8 @@ class GroupField:
         self.layout_groups = {
             'two_columns': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 10},  # Reduced from 20
             'four_columns': {'columns': 4, 'widths': [0.22, 0.22, 0.22, 0.22], 'spacing': 8},  # Reduced from 15
-            'name_details': {'columns': 2, 'widths': [0.6, 0.4], 'spacing': 10},  # Reduced from 15
-            'address_details': {'columns': 3, 'widths': [0.4, 0.3, 0.3], 'spacing': 8},  # Reduced from 12
+            'name_details': {'columns': 3, 'widths': [0.5, 0.3, 0.2], 'spacing': 10},  # Reduced from 15
+            'address_details': {'columns': 4, 'widths': [0.4, 0.2, 0.2, 0.2], 'spacing': 8},  # Reduced from 12
             'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},  # Reduced from 15
             'phone_details': {'columns': 3, 'widths': [0.33, 0.33, 0.33], 'spacing': 8},  # Reduced from 10
         }
@@ -88,21 +88,22 @@ class GroupField:
         """Get the position for the next field in the current group"""
         if self.generator.current_group is None:
             return self.margin_x, self.field_width, self.generator.current_y
-        
+
         group_index = len(self.generator.group_fields)
         column_index = group_index % self.generator.group_columns
         row_index = group_index // self.generator.group_columns
-        
+
         # Calculate X position
         field_x = self.margin_x
         if column_index > 0:
             field_x += sum(self.generator.column_widths[:column_index])
             field_x += self.generator.group_spacing * column_index
-        
+
         field_width = self.generator.column_widths[column_index]
-        
+
         # Calculate Y position - use row-based positioning
         field_y = self.generator.group_start_y
+
         if row_index > 0:
             # For subsequent rows, look at the previous row's minimum Y
             prev_row_start = (row_index - 1) * self.generator.group_columns
@@ -110,15 +111,30 @@ class GroupField:
             if prev_row_end > prev_row_start:
                 prev_row_fields = self.generator.group_fields[prev_row_start:prev_row_end]
                 prev_row_min_y = min(f.get('y', field_y) for f in prev_row_fields)
-                field_y = prev_row_min_y - 35  # Row spacing
-        
+                field_y = prev_row_min_y - 18  # Reduced row spacing from 35 to 18
+
+        # For column > 0 in any row, align with first field in row's start_y
+        if column_index > 0 and self.generator.group_fields:
+            first_in_row_index = row_index * self.generator.group_columns
+            if first_in_row_index < len(self.generator.group_fields):
+                first_field = self.generator.group_fields[first_in_row_index]
+                field_y = first_field.get('start_y', field_y)
+
+        # Page break detection: if calculated Y is much lower than current_y,
+        # a page break happened and we should use current_y instead
+        if field_y < self.generator.current_y - 100:
+            field_y = self.generator.current_y
+            # Update group_start_y for this new page
+            if column_index == 0:
+                self.generator.group_start_y = field_y
+
         return field_x, field_width, field_y
 
     def add_field_to_group(self, field_name, final_y, start_y=None, field_x=None, field_width=None):
         """Add a field to the current group tracking"""
         if self.generator.current_group is None:
             return
-            
+
         self.generator.group_fields.append({
             'name': field_name,
             'y': final_y,
@@ -126,3 +142,10 @@ class GroupField:
             'x': field_x or self.margin_x,
             'width': field_width or self.field_width
         })
+
+        # Handle row completion - update current_y when row is complete
+        if len(self.generator.group_fields) % self.generator.group_columns == 0:
+            row_start = len(self.generator.group_fields) - self.generator.group_columns
+            row_fields = self.generator.group_fields[row_start:]
+            min_y = min(f.get('y', self.generator.current_y) for f in row_fields)
+            self.generator.current_y = min_y - 8  # Reduced from 20 for tighter spacing

@@ -43,7 +43,6 @@ class CheckBox:
 
         # Parse options as (key, label)
         options_list = self._options_as_key_label(options)
-        print(f"[CheckBox] options_list(normalized)={options_list}")
 
         if len(options_list) == 1:
             self._draw_single_checkbox(c, field_name, label, options_list, field_x, field_width, field_y, starting_y)

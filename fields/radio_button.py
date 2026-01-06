@@ -51,9 +51,11 @@ class RadioButton:
         final_y = self._draw_radio_buttons_clean(c, field_name, options_list, field_x, field_y, field_width)
 
         if self.generator.current_group is not None:
-            self._handle_group_positioning(field_x, field_width, final_y, starting_y)
+            from fields.group_field import GroupField
+            group_field = GroupField(self.generator, c)
+            group_field.add_field_to_group(field_name, final_y, starting_y, field_x, field_width)
         else:
-            self.generator.current_y = final_y - 8
+            self.generator.current_y = final_y - 20
 
         c.setFont(current_font, current_size)
         c.setFillColor(current_color)
@@ -124,29 +126,12 @@ class RadioButton:
 
     def _get_field_position(self):
         """Calculate position for field within group or regular flow"""
-        field_x = self.margin_x
-        field_width = self.field_width
-        field_y = self.generator.current_y
-
         if self.generator.current_group is not None:
-            group_index = len(self.generator.group_fields)
-            column_index = group_index % self.generator.group_columns
-            
-            field_x = self.margin_x
-            if column_index > 0:
-                field_x += sum(self.generator.column_widths[:column_index])
-                field_x += self.generator.group_spacing * column_index
-            
-            field_width = self.generator.column_widths[column_index]
-            
-            if column_index > 0 and self.generator.group_fields:
-                row_index = group_index // self.generator.group_columns
-                first_in_row_index = row_index * self.generator.group_columns
-                if first_in_row_index < len(self.generator.group_fields):
-                    first_field = self.generator.group_fields[first_in_row_index]
-                    field_y = first_field.get('start_y', first_field.get('y', field_y))
-
-        return field_x, field_width, field_y
+            from fields.group_field import GroupField
+            group_field = GroupField(self.generator, self.canvas)
+            return group_field.get_field_position_in_group()
+        else:
+            return self.margin_x, self.field_width, self.generator.current_y
 
     def _handle_group_positioning(self, field_x, field_width, final_y, start_y):
         """Handle positioning when field is in a group"""
