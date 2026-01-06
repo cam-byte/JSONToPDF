@@ -28,13 +28,13 @@ from fields.select_field import SelectField
 from utils import _calculate_field_height, _check_page_break
 
 class ModernPDFFormGenerator:
-    def __init__(self, json_data):
+    def __init__(self, json_data, business_info=None):
         self.data = json_data
         self.page_width, self.page_height = letter
-        
+
         # REMOVED: Font registration - using standard fonts instead
         # Standard fonts like 'Helvetica', 'Helvetica-Bold' are always available
-        
+
         # Clean, reasonable settings
         self.margin_x = MARGINS['x']
         self.margin_bottom = MARGINS['bottom']
@@ -42,12 +42,14 @@ class ModernPDFFormGenerator:
         self.field_width = FIELD_DIMENSIONS['width']
         self.field_height = FIELD_DIMENSIONS['height']
         self.current_page = 1
-        
-        self.logo_path = BUSINESS_INFO['logo_path']
-        self.address = BUSINESS_INFO['address']
-        self.phone = BUSINESS_INFO['phone']
-        self.email = BUSINESS_INFO['email']
-        self.business_name = BUSINESS_INFO['business_name']
+
+        # Use provided business_info or fall back to defaults from constants
+        biz = business_info or BUSINESS_INFO
+        self.logo_path = biz.get('logo_path') or BUSINESS_INFO.get('logo_path')
+        self.address = biz.get('address') or BUSINESS_INFO.get('address', '')
+        self.phone = biz.get('phone') or BUSINESS_INFO.get('phone', '')
+        self.email = biz.get('email') or BUSINESS_INFO.get('email', '')
+        self.business_name = biz.get('business_name') or BUSINESS_INFO.get('business_name', '')
         
         self.colors = COLORS
         self.label_styles = LABEL_STYLES
@@ -422,42 +424,98 @@ class ModernPDFFormGenerator:
 
 
 # FIXED: Functions moved outside the class (correct indentation)
-def generate_form_pdf(json_file_path, output_pdf_path):
-    """Generate form PDF from JSON file"""
+def generate_form_pdf(json_file_path, output_pdf_path, business_info=None):
+    """Generate form PDF from JSON file.
+
+    Args:
+        json_file_path: Path to the JSON form definition
+        output_pdf_path: Path for the output PDF
+        business_info: Optional dict with keys: logo_path, business_name, address, phone, email
+    """
     if not os.path.exists(json_file_path):
         raise FileNotFoundError(f"JSON file not found: {json_file_path}")
-    
+
     with open(json_file_path, 'r', encoding='utf-8') as file:
         form_data = json.load(file)
 
-    generator = ModernPDFFormGenerator(form_data)
+    generator = ModernPDFFormGenerator(form_data, business_info=business_info)
     generator.generate_pdf(output_pdf_path)
 
 
 if __name__ == "__main__":
-    # Get paths from environment variables with fallback defaults
-    json_path = os.getenv('JSON_INPUT_PATH', 
-                         '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/form.json')
-    output_path = os.getenv('PDF_OUTPUT_PATH', 
-                           '/Users/camerondyas/Documents/scripts/pythonScripts/JSONToPDF/form/generated_form.pdf')
-    
-    print(f"Using JSON input path: {json_path}")
-    print(f"Using PDF output path: {output_path}")
-    
-    try:
-        if os.path.exists(output_path):
-            # Delete the file
-            os.remove(output_path)
-            print(f"Deleted existing file: {output_path}")
-        generate_form_pdf(json_path, output_path)
-        print(f"PDF generated successfully: {output_path}")
-    except FileNotFoundError as e:
-        print(f"File error: {e}")
-    except json.JSONDecodeError as e:
-        print(f"JSON parsing error: {e}")
-    except KeyError as e:
-        print(f"Missing required data in JSON: {e}")
-    except Exception as e:
-        print(f"Error generating PDF: {e}")
-        import traceback
-        traceback.print_exc()
+    import glob
+
+    # Paths
+    SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+    INPUT_DIR = os.path.join(SCRIPT_DIR, 'form', 'input')
+    OUTPUT_DIR = '/Users/camerondyas/Desktop/CustomPDF'
+
+    # Load business info from input folder if available
+    business_info_path = os.path.join(INPUT_DIR, 'business_info.json')
+    business_info = None
+
+    if os.path.exists(business_info_path):
+        try:
+            with open(business_info_path, 'r', encoding='utf-8') as f:
+                business_info = json.load(f)
+            print(f"Loaded business info: {business_info.get('business_name', 'Unknown')}")
+        except Exception as e:
+            print(f"Warning: Could not load business_info.json: {e}")
+            print("Using default business info from constants.py")
+
+    # Use logo from CustomPDF folder if available
+    logo_path = os.path.join(OUTPUT_DIR, 'logo.png')
+    if os.path.exists(logo_path):
+        if business_info is None:
+            business_info = {}
+        business_info['logo_path'] = logo_path
+        print(f"Using logo: {logo_path}")
+
+    # Find JSON files in the input folder (exclude business_info.json)
+    json_files = [f for f in glob.glob(os.path.join(INPUT_DIR, '*.json'))
+                  if os.path.basename(f) != 'business_info.json']
+
+    if not json_files:
+        print(f"No form JSON files found in: {INPUT_DIR}")
+        print("Place your form JSON files in the input folder and run again.")
+        exit(1)
+
+    print(f"Found {len(json_files)} form JSON file(s) to process")
+
+    for json_path in json_files:
+        json_filename = os.path.basename(json_path)
+        pdf_filename = os.path.splitext(json_filename)[0] + '.pdf'
+        output_path = os.path.join(OUTPUT_DIR, pdf_filename)
+
+        print(f"\nProcessing: {json_filename}")
+        print(f"  Output: {output_path}")
+
+        try:
+            if os.path.exists(output_path):
+                os.remove(output_path)
+                print(f"  Deleted existing: {pdf_filename}")
+
+            generate_form_pdf(json_path, output_path, business_info=business_info)
+            print(f"  PDF generated successfully!")
+
+            # Delete the input JSON file after successful processing
+            os.remove(json_path)
+            print(f"  Cleaned up input file: {json_filename}")
+
+        except FileNotFoundError as e:
+            print(f"  File error: {e}")
+        except json.JSONDecodeError as e:
+            print(f"  JSON parsing error: {e}")
+        except KeyError as e:
+            print(f"  Missing required data in JSON: {e}")
+        except Exception as e:
+            print(f"  Error generating PDF: {e}")
+            import traceback
+            traceback.print_exc()
+
+    # Clean up business_info.json after processing
+    if os.path.exists(business_info_path):
+        os.remove(business_info_path)
+        print(f"\nCleaned up: business_info.json")
+
+    print(f"\nDone! PDFs saved to: {OUTPUT_DIR}")
