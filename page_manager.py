@@ -27,6 +27,9 @@ class PageManager:
     def _draw_clean_business_header(self, canvas):
         """Draw clean, professional business header (first page only)
 
+        Layout: Logo on LEFT, location columns on RIGHT (right-aligned)
+        Each location column: street / city state zip / phone
+
         Returns:
             float: The Y position after the header (position of the bottom line)
         """
@@ -36,61 +39,117 @@ class PageManager:
 
         # Header positioning
         header_y = self.page_height - 25
+        line_height = 12  # Line spacing within location columns
+        col_gap = 20  # Gap between location columns
 
-        # Draw logo centered on its own row at the top if available
+        # Calculate logo dimensions first to know where to align text
         logo_height = 0
+        logo_width = 0
+        logo_img = None
         if self.generator.logo_path:
             logo_img = _prepare_logo_image(self.generator.logo_path)
             if logo_img:
                 logo_width, logo_height = _calculate_logo_dimensions(
                     self.generator.logo_path,
-                    max_width=120,
-                    max_height=50
+                    max_width=150,
+                    max_height=55
                 )
-                # Center the logo horizontally
-                logo_x = (self.page_width - logo_width) / 2
-                # Draw logo at the top
-                canvas.drawImage(
-                    logo_img,
-                    logo_x,
-                    header_y - logo_height,
-                    width=logo_width,
-                    height=logo_height,
-                    preserveAspectRatio=True,
-                    mask='auto'
-                )
-                # Adjust header_y to position text below the logo
-                header_y = header_y - logo_height - 15
 
-        # Business name on the left
-        canvas.setFont("Helvetica-Bold", 11)
+        # Logo top position (where both logo and text should align)
+        logo_top_y = header_y
+        logo_bottom_y = header_y - logo_height if logo_height else header_y
+
+        # Draw logo on the LEFT if available
+        if logo_img:
+            canvas.drawImage(
+                logo_img,
+                self.margin_x,
+                logo_bottom_y,
+                width=logo_width,
+                height=logo_height,
+                preserveAspectRatio=True,
+                mask='auto'
+            )
+
+        # Draw location columns on the RIGHT (right-aligned, columns fill from right)
+        # Text should start at logo_top_y minus a small offset for text baseline
+        canvas.setFont("Helvetica", 9)
         canvas.setFillColor(self.colors['primary'])
-        canvas.drawString(self.margin_x, header_y, self.generator.business_name)
 
-        # Address on second line (left side)
-        canvas.setFont("Helvetica", 9)
-        canvas.drawString(self.margin_x, header_y - 12, self.generator.address)
+        locations = getattr(self.generator, 'locations', None)
+        locations_bottom_y = header_y
 
-        # Contact info on the right, right-aligned
-        canvas.setFont("Helvetica", 9)
-        # Only add dot separator if email exists
-        if self.generator.email:
-            contact_info = f"{self.generator.phone} • {self.generator.email}"
+        # Calculate text start Y - align first line of text with logo top
+        # For 9pt font, move baseline down so text top aligns with logo top
+        # Logo top is at header_y, text visual top should also be at header_y
+        # Text ascender is ~7pt above baseline, so baseline should be at header_y - 7
+        # But the logo image may have internal padding, so use a larger offset
+        text_start_y = header_y - 15  # Push text down to align with logo visual top
+
+        if locations and isinstance(locations, list) and len(locations) > 0:
+            # Calculate column widths based on content
+            col_widths = []
+            for loc in locations:
+                street = loc.get('street', '')
+                city_state_zip = loc.get('city_state_zip', '')
+                phone = loc.get('phone', '')
+                max_width = max(
+                    canvas.stringWidth(street, "Helvetica", 9),
+                    canvas.stringWidth(city_state_zip, "Helvetica", 9),
+                    canvas.stringWidth(phone, "Helvetica", 9)
+                )
+                col_widths.append(max_width)
+
+            # Draw columns from right to left
+            right_edge = self.page_width - self.margin_x
+            for i, loc in enumerate(locations):
+                col_width = col_widths[i]
+                col_x = right_edge - col_width
+
+                street = loc.get('street', '')
+                city_state_zip = loc.get('city_state_zip', '')
+                phone = loc.get('phone', '')
+
+                # Draw right-aligned text for this column, starting aligned with logo top
+                y = text_start_y
+                if street:
+                    canvas.drawRightString(right_edge, y, street)
+                    y -= line_height
+                if city_state_zip:
+                    canvas.drawRightString(right_edge, y, city_state_zip)
+                    y -= line_height
+                if phone:
+                    canvas.drawRightString(right_edge, y, phone)
+                    y -= line_height
+
+                locations_bottom_y = min(locations_bottom_y, y)
+
+                # Move right_edge left for next column
+                right_edge = col_x - col_gap
+
         else:
-            contact_info = self.generator.phone
-        text_width = canvas.stringWidth(contact_info, "Helvetica", 9)
-        canvas.drawString(self.page_width - self.margin_x - text_width, header_y, contact_info)
+            # Backwards compatible: single address/phone on the right
+            canvas.setFont("Helvetica", 9)
+            if self.generator.address:
+                text_width = canvas.stringWidth(self.generator.address, "Helvetica", 9)
+                canvas.drawString(self.page_width - self.margin_x - text_width, header_y, self.generator.address)
+            if self.generator.phone:
+                text_width = canvas.stringWidth(self.generator.phone, "Helvetica", 9)
+                canvas.drawString(self.page_width - self.margin_x - text_width, header_y - line_height, self.generator.phone)
+            locations_bottom_y = header_y - (line_height * 2)
 
-        # Optional: Add a subtle line under the header
+        # Determine where the header ends (lowest of logo or locations)
+        header_bottom = min(logo_bottom_y, locations_bottom_y) - 5
+
+        # Draw divider line
         canvas.setStrokeColor(self.colors['border'])
         canvas.setLineWidth(0.5)
-        line_y = header_y - 18
-        canvas.line(self.margin_x, line_y,
-                   self.page_width - self.margin_x, line_y)
+        canvas.line(self.margin_x, header_bottom,
+                   self.page_width - self.margin_x, header_bottom)
 
         # Restore original font settings
         canvas.setFont(current_font, current_size)
         canvas.setFillColor(current_color)
 
         # Return the Y position after the header line
-        return line_y
+        return header_bottom

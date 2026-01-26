@@ -9,15 +9,17 @@ class GroupField:
         self.colors = generator.colors
 
         # Simplified group types - only track functional layout groups
+        # Note: widths are percentages of available_width (field_width - total_spacing)
+        # Widths MUST sum to exactly 1.0 to fill the full page width
         self.layout_groups = {
             # Auto-flow group (internal use - CSS flexbox-like 2-column layout)
-            '__auto_flow__': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 20},
-            'two_columns': {'columns': 2, 'widths': [0.48, 0.48], 'spacing': 10},  # Reduced from 20
-            'four_columns': {'columns': 4, 'widths': [0.22, 0.22, 0.22, 0.22], 'spacing': 8},  # Reduced from 15
-            'name_details': {'columns': 3, 'widths': [0.5, 0.3, 0.2], 'spacing': 10},  # Reduced from 15
-            'address_details': {'columns': 4, 'widths': [0.4, 0.2, 0.2, 0.2], 'spacing': 8},  # Reduced from 12
-            'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},  # Reduced from 15
-            'phone_details': {'columns': 3, 'widths': [0.33, 0.33, 0.33], 'spacing': 8},  # Reduced from 10
+            '__auto_flow__': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},
+            'two_columns': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},
+            'four_columns': {'columns': 4, 'widths': [0.25, 0.25, 0.25, 0.25], 'spacing': 8},
+            'name_details': {'columns': 3, 'widths': [0.45, 0.40, 0.15], 'spacing': 10},
+            'address_details': {'columns': 4, 'widths': [0.40, 0.28, 0.15, 0.17], 'spacing': 8},
+            'patient_contact': {'columns': 2, 'widths': [0.5, 0.5], 'spacing': 10},
+            'phone_details': {'columns': 3, 'widths': [0.34, 0.33, 0.33], 'spacing': 10},
             # Dental chart layouts - 16 columns for permanent teeth, 10 for deciduous
             'tooth_container': {'columns': 16, 'widths': [1/16]*16, 'spacing': 2},
         }

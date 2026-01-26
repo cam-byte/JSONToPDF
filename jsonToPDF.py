@@ -53,6 +53,8 @@ class ModernPDFFormGenerator:
         self.phone = biz.get('phone') or BUSINESS_INFO.get('phone', '')
         self.email = biz.get('email') or BUSINESS_INFO.get('email', '')
         self.business_name = biz.get('business_name') or BUSINESS_INFO.get('business_name', '')
+        # Support multiple locations - each with street, city_state_zip, phone
+        self.locations = biz.get('locations') or BUSINESS_INFO.get('locations')
         
         self.colors = COLORS
         self.label_styles = LABEL_STYLES
@@ -333,14 +335,27 @@ class ModernPDFFormGenerator:
             if not in_explicit_group:
                 is_flowable = field_type in AUTO_FLOW_FIELD_TYPES
                 is_flow_breaker = field_type in FLOW_BREAK_FIELD_TYPES
+                next_is_flowable = next_field_type in AUTO_FLOW_FIELD_TYPES if next_field_type else False
+                prev_was_group_end = prev_field_type == 'group_end'
+                next_is_group_or_label = next_field_type in ('group_start', 'label') if next_field_type else True
 
-                if is_flowable:
+                # Only auto-flow if BOTH current AND next fields are flowable
+                # This prevents single fields before labels/groups from being half-width
+                if is_flowable and next_is_flowable and not prev_was_group_end:
                     # Start auto-flow if not already active
                     if not self.auto_flow_active:
                         self._start_auto_flow(c)
                     self.auto_flow_field_count += 1
-                elif is_flow_breaker:
+                elif is_flowable and self.auto_flow_active:
+                    # Continue auto-flow if already active (to complete the pair)
+                    self.auto_flow_field_count += 1
+                    # End auto-flow after this field if next is not flowable
+                    if not next_is_flowable:
+                        # Draw this field first, then end flow
+                        pass  # Will be handled after drawing
+                elif is_flow_breaker or (is_flowable and not next_is_flowable and not self.auto_flow_active):
                     # End auto-flow before drawing flow-breaking field
+                    # Or if single flowable field followed by non-flowable (make it full width)
                     if self.auto_flow_active:
                         self._end_auto_flow(c)
 
@@ -379,15 +394,22 @@ class ModernPDFFormGenerator:
 
             # Calculate needed height with reasonable estimates
             needed_height = _calculate_field_height(
-                field_type, label, field.get('option', {}), 
-                self.field_width, self.field_height, 
+                field_type, label, field.get('option', {}),
+                self.field_width, self.field_height,
                 self.label_styles
             )
+
+            # "Keep with next" logic: Section titles (h3) should stay with their content
+            # If this is a section title, require room for title + at least one row of content (~80pt)
+            is_section_title = field_type == 'label' and '<h3>' in label.lower()
+            if is_section_title:
+                # Need extra space to keep title with its content
+                needed_height = max(needed_height, 80)
 
             if _check_page_break(self, c, needed_height):
                 # CRITICAL: Increment page counter BEFORE initializing new page
                 self.current_page += 1
-                
+
                 self.page_manager.initialize_page(c)
                 if self.current_group:
                     self.group_fields = []
@@ -395,6 +417,13 @@ class ModernPDFFormGenerator:
 
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
+
+            # End auto-flow after drawing if next field is not flowable
+            if self.auto_flow_active and not in_explicit_group:
+                next_type = fields[i+1].get('type', '').lower().strip() if i+1 < num_fields else None
+                if next_type not in AUTO_FLOW_FIELD_TYPES:
+                    self._end_auto_flow(c)
+
             i += 1
 
         # End auto-flow if still active at end of form

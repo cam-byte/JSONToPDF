@@ -272,7 +272,13 @@ class CheckBox:
 
         normalized_value = self._normalize_field_value(value_key)
         checkbox_name = f"{field_name}_{normalized_value}"
-        box_y = field_y - checkbox_size + 2
+
+        # Align checkbox box with text on the SAME LINE
+        # Text baseline is at field_y, checkbox should be vertically centered with text
+        # For ~10pt font, text ascender is ~7pt above baseline
+        # Checkbox is 12pt tall, so position it so its vertical center aligns with text center
+        text_y = field_y
+        box_y = text_y - 3  # Position checkbox so it's vertically centered with text
 
         self._create_checkbox_field(
             c,
@@ -288,13 +294,18 @@ class CheckBox:
         c.setFont(font_name, font_size)
         c.setFillColor(color)
         text_x = field_x + checkbox_size + gap
-        text_y = field_y - 2
-        for line in lines:
-            c.drawString(text_x, text_y, line)
-            text_y -= font_size + max(1, line_gap)
+        # Draw text on same line as checkbox
+        c.drawString(text_x, text_y, lines[0] if lines else checkbox_text)
+        # Draw any additional wrapped lines below
+        line_y = text_y - font_size - max(1, line_gap)
+        for line in lines[1:]:
+            c.drawString(text_x, line_y, line)
+            line_y -= font_size + max(1, line_gap)
 
         after_spacing = 8  # fixed, tighter
-        final_y = min(box_y, text_y) - after_spacing
+        # Calculate final_y based on the lowest point (either checkbox bottom or last text line)
+        lowest_text_y = line_y if len(lines) > 1 else text_y - font_size
+        final_y = min(box_y, lowest_text_y) - after_spacing
         self.generator.current_y = final_y
 
         if self.generator.current_group is not None:
