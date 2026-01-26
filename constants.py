@@ -52,6 +52,20 @@ FULL_WIDTH_FIELDS = {
     'premedication_required',  # Radio button that should be full width
 }
 
+# Auto-flow configuration (CSS flexbox-like behavior)
+# Field types that auto-flow into 2 columns
+AUTO_FLOW_FIELD_TYPES = {'text', 'date', 'email', 'select'}
+
+# Field types that break the flow and take full width
+FLOW_BREAK_FIELD_TYPES = {'label', 'textarea', 'radio', 'checkbox', 'group_start', 'group_end'}
+
+# Auto-flow layout configuration
+AUTO_FLOW_CONFIG = {
+    'columns': 2,
+    'widths': [0.48, 0.48],
+    'spacing': 20
+}
+
 # Clean group configurations with reasonable spacing
 # constants.py - FIXED FOR ACTUAL JSON STRUCTURE
 
@@ -117,7 +131,8 @@ GROUP_CONFIGS = {
         'spacing': 20
     },
     
-    # Dental chart groups (if needed)
+    # Dental chart groups
+    # Container groups (for nesting structure)
     'permanent': {
         'columns': 1,
         'widths': [1.0],
@@ -148,6 +163,7 @@ GROUP_CONFIGS = {
         'widths': [1.0],
         'spacing': 2
     },
+
     
     # Other utility groups
     'indent_x1': {
@@ -164,5 +180,14 @@ GROUP_CONFIGS = {
         'columns': 1,
         'widths': [1.0],
         'spacing': 0
+    },
+
+    # Inline container - for fill-in-the-blank paragraphs
+    # This is a special layout type that flows text and fields horizontally
+    'inline_container': {
+        'type': 'inline',
+        'line_height': 18,
+        'field_height': 14,
+        'spacing': 4  # horizontal spacing between elements
     }
 }

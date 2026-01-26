@@ -9,12 +9,15 @@ import json
 load_dotenv()
 
 from constants import (
-    MARGINS, 
-    FIELD_DIMENSIONS, 
-    BUSINESS_INFO, 
+    MARGINS,
+    FIELD_DIMENSIONS,
+    BUSINESS_INFO,
     COLORS,
     GROUP_CONFIGS,
-    FULL_WIDTH_FIELDS 
+    FULL_WIDTH_FIELDS,
+    AUTO_FLOW_FIELD_TYPES,
+    FLOW_BREAK_FIELD_TYPES,
+    AUTO_FLOW_CONFIG
 )
 from label_styles import LABEL_STYLES
 from page_manager import PageManager
@@ -62,9 +65,17 @@ class ModernPDFFormGenerator:
         self.group_spacing = None
         self.group_columns = None
         self.group_start_y = None
+        self.group_stack = []
 
         self.page_manager = PageManager(self)
         self.label_manager = LabelManager(self)
+
+        # Inline container state (for fill-in-the-blank paragraphs)
+        self.inline_state = None
+
+        # Auto-flow state (CSS flexbox-like 2-column layout for text fields)
+        self.auto_flow_active = False
+        self.auto_flow_field_count = 0
 
         # Get the first key and parse form data
         self.form_key = self._get_first_form_key()
@@ -183,6 +194,13 @@ class ModernPDFFormGenerator:
             group_field.end_group()
             return
 
+        # Handle inline_text fields (for fill-in-the-blank paragraphs)
+        if field_type == 'inline_text':
+            from fields.inline_text_field import InlineTextField
+            inline_field = InlineTextField(self, c)
+            inline_field.draw_text(label)
+            return
+
         # Handle label-only fields
         if field_type == 'label':
             style = self.label_manager.get_label_style(field_type, label)
@@ -192,9 +210,15 @@ class ModernPDFFormGenerator:
             # Handle form fields
             try:
                 if field_type in ['text', 'email', 'date']:
-                    from fields.text_field import TextField
-                    text_field = TextField(self, c)
-                    text_field.draw(field_name, label)
+                    # Check if we're inside an inline container
+                    if hasattr(self, 'inline_state') and self.inline_state is not None:
+                        from fields.inline_text_field import InlineTextField
+                        inline_field = InlineTextField(self, c)
+                        inline_field.draw_field(field_name, label)
+                    else:
+                        from fields.text_field import TextField
+                        text_field = TextField(self, c)
+                        text_field.draw(field_name, label)
                 elif field_type == 'select':
                     from fields.select_field import SelectField
                     select_field = SelectField(self, c)
@@ -233,26 +257,51 @@ class ModernPDFFormGenerator:
             temp_group = self.current_group
             temp_config = {
                 'columns': self.group_columns,
-                'widths': [w / (self.field_width - self.group_spacing * (self.group_columns - 1)) 
+                'widths': [w / (self.field_width - self.group_spacing * (self.group_columns - 1))
                         for w in self.column_widths] if self.column_widths else [0.5, 0.5],
                 'spacing': self.group_spacing
             }
-            
+
             # End current group
             from fields.group_field import GroupField
             group_field = GroupField(self, c)
             group_field.end_group()
-            
+
             # Start new page
             self.current_page += 1
             self.page_manager.initialize_page(c)
-            
+
             # Restart the group on new page
             group_field.start_group(temp_group)
         else:
             # Normal page break
             self.current_page += 1
             self.page_manager.initialize_page(c)
+
+    def _start_auto_flow(self, c):
+        """Start auto-flow 2-column layout (CSS flexbox-like behavior)"""
+        if self.auto_flow_active:
+            return  # Already active
+
+        self.auto_flow_active = True
+        self.auto_flow_field_count = 0
+
+        # Use group system internally with special marker
+        from fields.group_field import GroupField
+        group_field = GroupField(self, c)
+        group_field.start_group('__auto_flow__')
+
+    def _end_auto_flow(self, c):
+        """End auto-flow layout"""
+        if not self.auto_flow_active:
+            return  # Not active
+
+        from fields.group_field import GroupField
+        group_field = GroupField(self, c)
+        group_field.end_group()
+
+        self.auto_flow_active = False
+        self.auto_flow_field_count = 0
 
     # In your ModernPDFFormGenerator class, update the _process_fields method:
 
@@ -276,34 +325,56 @@ class ModernPDFFormGenerator:
                 i += 1
                 continue
 
+            # --- AUTO-FLOW LOGIC: CSS flexbox-like 2-column layout for text fields ---
+            # Only apply auto-flow if not inside an explicit user-defined group
+            in_explicit_group = (self.current_group is not None and
+                                self.current_group != '__auto_flow__')
+
+            if not in_explicit_group:
+                is_flowable = field_type in AUTO_FLOW_FIELD_TYPES
+                is_flow_breaker = field_type in FLOW_BREAK_FIELD_TYPES
+
+                if is_flowable:
+                    # Start auto-flow if not already active
+                    if not self.auto_flow_active:
+                        self._start_auto_flow(c)
+                    self.auto_flow_field_count += 1
+                elif is_flow_breaker:
+                    # End auto-flow before drawing flow-breaking field
+                    if self.auto_flow_active:
+                        self._end_auto_flow(c)
+
             # --- DYNAMIC LOGIC: Force new row for specific fields or radio between text fields ---
             # Check for Women Only label by content
-            is_women_only_label = (field_type == 'label' and 
-                                'women only' in label.lower() and 
+            is_women_only_label = (field_type == 'label' and
+                                'women only' in label.lower() and
                                 'are you' in label.lower())
-            
-            if (field_name in FULL_WIDTH_FIELDS or 
+
+            if (field_name in FULL_WIDTH_FIELDS or
                 is_women_only_label or
-                (field_type == 'radio' and 
-                (prev_field_type == 'text' or next_field_type == 'text') and 
+                (field_type == 'radio' and
+                (prev_field_type == 'text' or next_field_type == 'text') and
                 self.current_group is None)):
-                
-                # Temporarily end current group if any
+
+                # Temporarily end current group if any (including auto-flow)
                 temp_group = self.current_group
+                was_auto_flow = self.auto_flow_active
                 if self.current_group:
                     group_field = GroupField(self, c)
                     group_field.end_group()
                     self.current_group = None
-                
+                    if was_auto_flow:
+                        self.auto_flow_active = False
+
                 # Draw the field as full-width
                 self._draw_field(c, field_type, field_name, label, field.get('option', {}))
                 i += 1
-                
-                # Restore the group if we temporarily ended it
-                if temp_group:
+
+                # Restore the group if we temporarily ended it (but not auto-flow)
+                if temp_group and not was_auto_flow:
                     group_field = GroupField(self, c)
                     group_field.start_group(temp_group)
-                
+
                 continue
 
             # Calculate needed height with reasonable estimates
@@ -325,6 +396,10 @@ class ModernPDFFormGenerator:
             # Draw the field
             self._draw_field(c, field_type, field_name, label, field.get('option', {}))
             i += 1
+
+        # End auto-flow if still active at end of form
+        if self.auto_flow_active:
+            self._end_auto_flow(c)
 
     def generate_pdf(self, output_filename):
         """Updated with minimal Adobe Acrobat compatibility fixes"""
@@ -354,6 +429,10 @@ class ModernPDFFormGenerator:
         self.current_y = self.page_height - self.margin_x
         self.current_group = None
         self.group_fields = []
+        self.group_stack = []
+        self.inline_state = None
+        self.auto_flow_active = False
+        self.auto_flow_field_count = 0
         
         c = canvas.Canvas(
             output_filename, 
@@ -464,12 +543,7 @@ if __name__ == "__main__":
             print("Using default business info from constants.py")
 
     # Use logo from CustomPDF folder if available
-    logo_path = os.path.join(OUTPUT_DIR, 'logo.png')
-    if os.path.exists(logo_path):
-        if business_info is None:
-            business_info = {}
-        business_info['logo_path'] = logo_path
-        print(f"Using logo: {logo_path}")
+    logo_path = "/Users/camerondyas/Desktop/CustomPDF/logo.png"
 
     # Find JSON files in the input folder (exclude business_info.json)
     json_files = [f for f in glob.glob(os.path.join(INPUT_DIR, '*.json'))

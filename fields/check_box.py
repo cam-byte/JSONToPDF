@@ -199,13 +199,14 @@ class CheckBox:
         line_gap = CHECKBOX_LINE_GAP
         baseline_nudge = CHECKBOX_BASELINE_NUDGE
 
-        in_two_col = (
-            self.generator.current_group == 'two_columns' and
-            self.generator.group_columns == 2 and
+        in_multi_col = (
+            self.generator.current_group is not None and
+            self.generator.group_columns is not None and
+            self.generator.group_columns >= 2 and
             self.generator.column_widths is not None
         )
 
-        if in_two_col:
+        if in_multi_col:
             # Wrap text within the column (minus square + gap)
             usable_text_w = max(0, field_width - (checkbox_size + gap))
             c.setFont(font_name, font_size)
@@ -303,8 +304,8 @@ class CheckBox:
         from reportlab.pdfbase.pdfmetrics import stringWidth
         checkbox_size = CHECKBOX_BOX_SIZE
         padding = CHECKBOX_GAP
-        
-        if self.generator.current_group == 'two_columns' and self.generator.column_widths:
+
+        if self.generator.current_group is not None and self.generator.column_widths:
             group_index = len(self.generator.group_fields)
             column_index = group_index % self.generator.group_columns
             available_width = self.generator.column_widths[column_index]
@@ -332,9 +333,10 @@ class CheckBox:
             style = self.generator.label_manager.get_label_style('checkbox', label)
             self.generator.label_manager.draw_label(c, label, style, spacing_before=0, tight=True)
 
-        in_two_col = (
-            self.generator.current_group == 'two_columns' and
-            self.generator.group_columns == 2 and
+        in_multi_col = (
+            self.generator.current_group is not None and
+            self.generator.group_columns is not None and
+            self.generator.group_columns >= 2 and
             self.generator.column_widths is not None
         )
 
@@ -344,7 +346,7 @@ class CheckBox:
         v_pad = CHECKBOX_VPAD
         baseline_nudge = CHECKBOX_BASELINE_NUDGE
 
-        if in_two_col:
+        if in_multi_col:
             # Column-constrained vertical list with centered rows (compact)
             usable_text_w = max(0, field_width - (checkbox_size + gap))
             c.setFont("Helvetica", 9)
